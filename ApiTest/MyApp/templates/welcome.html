@@ -79,7 +79,7 @@ padding-left: 5px;padding-right: 5px">
         var rvnMenu = $("#navbar").rvnm({
 //                    mode: 'mobile',
 //                    responsive: false,
-            searchable: true,
+            searchable: false,
             theme: 'dark-lesb'
         });
         console.log(rvnMenu);
@@ -90,7 +90,7 @@ padding-left: 5px;padding-right: 5px">
 <div id="page1"></div>
 <script>$('#page1').load('/child/' + '{{ whichHTML }}/{{ oid }}/')</script>
 <script>
-    if ("{{ whichHTML }}" != 'home.html') {
+    if ("{{ whichHTML }}" == 'home.html') {
         document.getElementById('menu_btn').click();
     }
 </script>

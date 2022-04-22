@@ -249,6 +249,14 @@ def Api_send(request):
         header = json.loads(ts_header)  # 处理header
     except:
         return HttpResponse('请求头不符合json格式')
+    # 写入到数据库请求记录表中
+    DB_apis_log.objects.create(user_id=request.user.id,
+                               api_method=ts_method,
+                               api_url=ts_url,
+                               api_header=ts_header,
+                               api_host=ts_host,
+                               body_method=ts_body_method,
+                               api_body=ts_api_body,)
     # 拼接完整url
     if ts_host and ts_host[-1] == '/':
         ts_host = ts_host[:-1]
@@ -363,3 +371,75 @@ def error_request(request):
     except:
         res_json = {"response": '对不起,接口未通', "span_text": span_text}
         return HttpResponse(json.dumps(res_json), content_type='application/json')
+
+
+# 首页发送请求
+def Api_send_home(request):
+    # 提取所有数据
+    print('qwe')
+    ts_method = request.GET['ts_method']
+    ts_url = request.GET['ts_url']
+    ts_host = request.GET['ts_host']
+    ts_header = request.GET['ts_header']
+    ts_body_method = request.GET['ts_body_method']
+    ts_api_body = request.GET['ts_api_body']
+    # 发送请求获取返回值
+    try:
+        header = json.loads(ts_header)  # 处理header
+    except:
+        return HttpResponse('请求头不符合json格式！')
+    # 拼接完整url
+    if ts_host[-1] == '/' and ts_url[0] == '/':  # 都有/
+        url = ts_host[:-1] + ts_url
+    elif ts_host[-1] != '/' and ts_url[0] != '/':  # 都没有/
+        url = ts_host + '/' + ts_url
+    else:  # 肯定有一个有/
+        url = ts_host + ts_url
+    try:
+        if ts_body_method == 'none':
+            response = requests.request(ts_method.upper(), url, headers=header, data={})
+
+        elif ts_body_method == 'form-data':
+            files = []
+            payload = {}
+            for i in eval(ts_api_body):
+                payload[i[0]] = i[1]
+            response = requests.request(ts_method.upper(), url, headers=header, data=payload, files=files)
+
+        elif ts_body_method == 'x-www-form-urlencoded':
+            header['Content-Type'] = 'application/x-www-form-urlencoded'
+            payload = {}
+            for i in eval(ts_api_body):
+                payload[i[0]] = i[1]
+            response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+
+        else:  # 这时肯定是raw的五个子选项：
+            if ts_body_method == 'Text':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'JavaScript':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'Json':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'Html':
+                header['Content-Type'] = 'text/plain'
+
+            if ts_body_method == 'Xml':
+                header['Content-Type'] = 'text/plain'
+            response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+
+        # 把返回值传递给前端页面
+        response.encoding = "utf-8"
+        return HttpResponse(response.text)
+    except Exception as e:
+        return HttpResponse(str(e))
+
+
+# 首页获取请求记录
+def get_home_log(request):
+    user_id = request.user.id
+    all_logs = DB_apis_log.objects.filter(user_id=user_id)
+    ret = {"all_logs": list(all_logs.values("id", "api_method", "api_host", "api_url"))}
+    return HttpResponse(json.dumps(ret), content_type='application/json')
