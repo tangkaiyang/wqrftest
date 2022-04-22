@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+
+    </style>
+</head>
+<body>
+<h3>&#12288;您的请求记录：</h3>
+<div id="home_log_plan" style="padding-left: 20px;overflow-y: scroll;width: 320px">
+    {% for i in home_log %}
+        <a href="javascript:home_log_show('{{ i.id }}')" style="text-decoration: none"  class="log" >
+            <span style="font-size: large;color: black">{{ i.api_method }}</span> -
+            {{ i.api_host }}{{ i.api_url }}
+        </a> <br>
+    {% endfor %}
+</div>
+<div id="shu" style="width: 2px;background-color: #262c2c;position: absolute;top: 70px;left: 340px">&nbsp;</div>
+<div style="position: absolute;top: 100px;left: 300px;width: -webkit-calc(100% - 390px);">
+
+</div>
+<script>
+    var h = document.documentElement.clientHeight;
+    document.getElementById('shu').style.height = (h-85).toString() + 'px';
+    document.getElementById('home_log_plan').style.height = (h-85).toString() + 'px';
+</script>
+</body>
+</html>
