@@ -7,6 +7,7 @@
     </style>
 </head>
 <body>
+<h2 style="margin-left: 400px;color: #03c0fb;">欢迎使用 接口测试平台</h2>
 <h3>&#12288;您的请求记录：</h3>
 <div id="home_log_plan" style="padding-left: 20px;overflow-y: scroll;width: 320px">
     {% for i in home_log %}
@@ -242,24 +243,23 @@
                 'ts_body_method': ts_body_method,
                 'ts_api_body': ts_api_body
             }, function (ret) {
-                $("li a[href=#response]").click(); //点击一下返回体按钮
+                log_refresh();
+                $("li a[href=#response]")[0].click(); //点击一下返回体按钮
                 document.getElementById('ts_response_body').value = ret;//把返回值显示到返回值多行文本框中
             })
         }
+
         // 左侧记录刷新
-        log_refresh();
         function log_refresh() {
             // 清空已显示的记录
             div = document.getElementById('home_log_plan');
             div.innerHTML = '';
             // 从数据库获取最新的记录生成展示
-            $.get('/get_home_log/', {
-
-            }, function (ret) {
+            $.get('/get_home_log/', {}, function (ret) {
                 console.log(ret);
                 var res = eval(ret);
                 var all_logs = res.all_logs;
-                for (var i=0; i<all_logs.length; i++) {
+                for (var i = 0; i < all_logs.length; i++) {
                     var a = document.createElement('a'); //创建a标签
                     a.href = "javascript:home_log_show()"; // 点击函数
                     a.style = "text-decoration: none";
