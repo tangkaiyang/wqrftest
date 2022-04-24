@@ -58,6 +58,10 @@ def child_json(eid, oid="", ooid=""):
     if eid == "P_project_set.html":
         project = DB_project.objects.filter(id=oid)[0]
         res = {"project": project}
+    if eid == "P_cases.html":
+        Cases = DB_cases.objects.filter(project_id=oid)
+        project = DB_project.objects.filter(id=oid)[0]
+        res = {"project": project, "Cases": Cases}
 
     return res
 
@@ -123,6 +127,7 @@ def delete_project(request):
     id = request.GET['id']
     DB_project.objects.filter(id=id).delete()
     DB_apis.objects.filter(project_id=id).delete()
+    DB_cases.objects.filter(project_id=id).delete()  # 删除关联用例
     return HttpResponse('')
 
 
@@ -465,3 +470,22 @@ def get_api_log_home(request):
     ret = {"log": list(log.values())[0]}
     # print(ret)
     return HttpResponse(json.dumps(ret), content_type='application/json')
+
+
+# 增加用例
+def add_case(request, eid):
+    DB_cases.objects.create(project_id=eid, name='')
+    return HttpResponseRedirect('/cases/%s/' % eid)
+
+
+# 删除用例
+def del_case(request, eid, oid):
+    DB_cases.objects.filter(id=oid).delete()
+    return HttpResponseRedirect('/cases/%s/' % eid)
+
+
+# 复制用例
+def copy_case(request, eid, oid):
+    old_case = DB_cases.objects.filter(id=oid)[0]
+    DB_cases.objects.create(project_id=old_case.project_id, name=old_case.name + "_副本")
+    return HttpResponseRedirect('/cases/%s/' % eid)

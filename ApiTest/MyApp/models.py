@@ -70,3 +70,11 @@ class DB_apis_log(models.Model):
 
     def __str__(self):
         return self.api_url
+
+
+class DB_cases(models.Model):
+    project_id = models.CharField(max_length=10, null=True)  # 所属项目id
+    name = models.CharField(max_length=50, null=True)  # 用例名字
+
+    def __str__(self):
+        return self.name

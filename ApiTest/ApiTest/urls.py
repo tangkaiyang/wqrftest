@@ -52,4 +52,7 @@ urlpatterns = [
     url(r'^get_home_log/$', get_home_log),  # 获取最新请求记录
     url(r'^get_api_log_home/$', get_api_log_home),  # 获取完整的单一的请求记录数据
     url(r'^home_log/(?P<log_id>.*)/$', home),  # 再次进入首页,带上请求记录
+    url(r'^add_case/(?P<eid>.*)/$', add_case),  # 增加用例
+    url(r'^del_case/(?P<eid>.*)/(?P<oid>.*)/$', del_case),  # 删除用例
+    url(r'^copy_case/(?P<eid>.*)/(?P<oid>.*)/$', copy_case),  # 复制用例用例
 ]

@@ -5,20 +5,58 @@
     <title>Title</title>
 </head>
 <body>
-<nav class="navbar navbar-default" role="navigation" style="position: absolute;top: 0px;left: 80px;width:-webkit-calc(100% - 200px);z-index: 1">
+<nav class="navbar navbar-default" role="navigation"
+     style="position: absolute;top: 0px;left: 80px;width:-webkit-calc(100% - 200px);z-index: 1">
     <div class="container-fluid">
-    <div class="navbar-header">
-        <span style="font-size: xx-small" class="navbar-brand" >项目名称：{{ project.name }}</span>
-        <a class="navbar-brand" href="/project_list/">返回项目列表</a>
-    </div>
-    <div>
-        <ul class="nav navbar-nav">
-            <li><a href="/apis/{{ project.id }}/">接口库</a></li>
-            <li class="active"><a href="/cases/{{ project.id }}/">用例库</a></li>
-            <li><a href="/project_set/{{ project.id }}/">项目设置</a></li>
-        </ul>
-    </div>
+        <div class="navbar-header">
+            <span style="font-size: xx-small" class="navbar-brand">项目名称：{{ project.name }}</span>
+            <a class="navbar-brand" href="/project_list/">返回项目列表</a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li><a href="/apis/{{ project.id }}/">接口库</a></li>
+                <li class="active"><a href="/cases/{{ project.id }}/">用例库</a></li>
+                <li><a href="/project_set/{{ project.id }}/">项目设置</a></li>
+            </ul>
+        </div>
     </div>
 </nav>
+<br><br>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th style="width: 50px">id</th>
+        <th style="width: -webkit-calc(100% - 410px)">用例名称</th>
+        <th style="width: 350px">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for i in Cases %}
+        <tr>
+            <td>{{ i.id }}</td>
+            <td>{{ i.name }}</td>
+            <td>
+                <div class="btn-group" style="z-index: 0">
+                    <button class="btn btn-success" onclick="">运行</button>
+                    <button class="btn btn-default" onclick="">设置</button>
+                    <button class="btn btn-default" onclick="">查看报告</button>
+                    <a href="/copy_case/{{ project.id }}/{{ i.id }}/">
+                        <button class="btn btn-default" onclick="">复制</button>
+                    </a>
+                    <a href="/del_case/{{ project.id }}/{{ i.id }}/">
+                        <button class="btn btn-danger" onclick="">删除</button>
+                    </a>
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+
+<a href="/add_case/{{ project.id }}/">
+    <button style="margin-left: 10px" class="btn btn-primary">新增用例</button>
+</a>
+
 </body>
 </html>
