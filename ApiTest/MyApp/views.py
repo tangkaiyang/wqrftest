@@ -20,24 +20,28 @@ def case_list(request):
 
 
 @login_required
-def home(request):
+def home(request, log_id=''):
     print(request.user.id)
-    return render(request, 'welcome.html', {"whichHTML": "home.html", "oid": request.user.id})
+    return render(request, 'welcome.html', {"whichHTML": "home.html", "oid": request.user.id, "ooid": log_id})
 
 
-def child(request, eid, oid):
+def child(request, eid, oid, ooid):
     print(eid)
-    res = child_json(eid, oid)
+    res = child_json(eid, oid, ooid)
     return render(request, eid, res)
 
 
 # 控制不同的也没返回不同的数据:数据分发器
-def child_json(eid, oid=""):
+def child_json(eid, oid="", ooid=""):
     res = {}
     if eid == "home.html":
         date = DB_home_href.objects.all()
         home_log = DB_apis_log.objects.filter(user_id=oid)[::-1]
-        res = {"hrefs": date, "home_log": home_log}
+        if ooid == '':
+            res = {"hrefs": date, "home_log": home_log}
+        else:
+            log = DB_apis_log.objects.filter(id=ooid)[0]
+            res = {"hrefs": date, "home_log": home_log, "log": log}
     if eid == "project_list.html":
         date = DB_project.objects.all()
         res = {"projects": date}
@@ -451,4 +455,13 @@ def get_home_log(request):
     user_id = request.user.id
     all_logs = DB_apis_log.objects.filter(user_id=user_id)
     ret = {"all_logs": list(all_logs.values("id", "api_method", "api_host", "api_url"))[::-1]}
+    return HttpResponse(json.dumps(ret), content_type='application/json')
+
+
+# 获取完整的单一的请求记录数据
+def get_api_log_home(request):
+    log_id = request.GET['log_id']
+    log = DB_apis_log.objects.filter(id=log_id)
+    ret = {"log": list(log.values())[0]}
+    # print(ret)
     return HttpResponse(json.dumps(ret), content_type='application/json')

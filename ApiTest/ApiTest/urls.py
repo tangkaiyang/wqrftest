@@ -24,7 +24,7 @@ urlpatterns = [
     url(r'^welcome/$', welcome),
     url(r'^case_list/$', case_list),
     url(r'^home/$', home),
-    url(r"^child/(?P<eid>.+)/(?P<oid>.*)/$", child),  # 返回子页面
+    url(r"^child/(?P<eid>.+)/(?P<oid>.*)/(?P<ooid>.*)/$", child),  # 返回子页面
     url(r'^login/$', login),
     url(r'^login_action/$', login_action),
     url(r'^register_action/$', register_action),
@@ -49,5 +49,7 @@ urlpatterns = [
     url(r'^copy_api/$', copy_api),  # 复制接口
     url(r'^error_request/$', error_request),  # 调用异常测试接口
     url(r'^Api_send_home/$', Api_send_home),  # 首页发送请求
-    url(r'^get_home_log/$', get_home_log), # 获取最新请求记录
+    url(r'^get_home_log/$', get_home_log),  # 获取最新请求记录
+    url(r'^get_api_log_home/$', get_api_log_home),  # 获取完整的单一的请求记录数据
+    url(r'^home_log/(?P<log_id>.*)/$', home),  # 再次进入首页,带上请求记录
 ]
