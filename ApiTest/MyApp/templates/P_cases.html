@@ -1,85 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8"/>
     <title>Title</title>
-  </head>
-  <body>
-    <nav
-      class="navbar navbar-default"
-      role="navigation"
-      style="
+</head>
+<body>
+<nav
+        class="navbar navbar-default"
+        role="navigation"
+        style="
         position: absolute;
         top: 0px;
         left: 80px;
         width: -webkit-calc(100% - 200px);
         z-index: 1;
       "
-    >
-      <div class="container-fluid">
+>
+    <div class="container-fluid">
         <div class="navbar-header">
           <span style="font-size: xx-small" class="navbar-brand"
-            >项目名称：{{ project.name }}</span
+          >项目名称：{{ project.name }}</span
           >
-          <a class="navbar-brand" href="/project_list/">返回项目列表</a>
+            <a class="navbar-brand" href="/project_list/">返回项目列表</a>
         </div>
         <div>
-          <ul class="nav navbar-nav">
-            <li><a href="/apis/{{ project.id }}/">接口库</a></li>
-            <li class="active">
-              <a href="/cases/{{ project.id }}/">用例库</a>
-            </li>
-            <li><a href="/project_set/{{ project.id }}/">项目设置</a></li>
-          </ul>
+            <ul class="nav navbar-nav">
+                <li><a href="/apis/{{ project.id }}/">接口库</a></li>
+                <li class="active">
+                    <a href="/cases/{{ project.id }}/">用例库</a>
+                </li>
+                <li><a href="/project_set/{{ project.id }}/">项目设置</a></li>
+            </ul>
         </div>
-      </div>
-    </nav>
-    <br /><br />
-    <table class="table table-striped">
-      <thead>
+    </div>
+</nav>
+<br/><br/>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th style="width: 50px">id</th>
+        <th style="width: -webkit-calc(100% - 410px)">用例名称</th>
+        <th style="width: 350px">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for i in Cases %}
         <tr>
-          <th style="width: 50px">id</th>
-          <th style="width: -webkit-calc(100% - 410px)">用例名称</th>
-          <th style="width: 350px">操作</th>
+            <td>{{ i.id }}</td>
+            <td>{{ i.name }}</td>
+            <td>
+                <div class="btn-group" style="z-index: 0">
+                    <button class="btn btn-success" onclick="">运行</button>
+                    <button
+                            class="btn btn-default"
+                            onclick="show_small('{{ i.id }}','{{ i.name }}')"
+                    >
+                        设置
+                    </button>
+                    <button class="btn btn-default" onclick="">查看报告</button>
+                    <a href="/copy_case/{{ project.id }}/{{ i.id }}/">
+                        <button class="btn btn-default" onclick="">复制</button>
+                    </a>
+                    <a href="/del_case/{{ project.id }}/{{ i.id }}/">
+                        <button class="btn btn-danger" onclick="">删除</button>
+                    </a>
+                </div>
+            </td>
         </tr>
-      </thead>
-      <tbody>
-        {% for i in Cases %}
-        <tr>
-          <td>{{ i.id }}</td>
-          <td>{{ i.name }}</td>
-          <td>
-            <div class="btn-group" style="z-index: 0">
-              <button class="btn btn-success" onclick="">运行</button>
-              <button
-                class="btn btn-default"
-                onclick="show_small('{{ i.id }}')"
-              >
-                设置
-              </button>
-              <button class="btn btn-default" onclick="">查看报告</button>
-              <a href="/copy_case/{{ project.id }}/{{ i.id }}/">
-                <button class="btn btn-default" onclick="">复制</button>
-              </a>
-              <a href="/del_case/{{ project.id }}/{{ i.id }}/">
-                <button class="btn btn-danger" onclick="">删除</button>
-              </a>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    {% endfor %}
+    </tbody>
+</table>
 
-    <a href="/add_case/{{ project.id }}/">
-      <button style="margin-left: 10px" class="btn btn-primary">
+<a href="/add_case/{{ project.id }}/">
+    <button style="margin-left: 10px" class="btn btn-primary">
         新增用例
-      </button>
-    </a>
-    {#小用例列表#}
-    <div
-      id="left_div"
-      style="
+    </button>
+</a>
+{#小用例列表#}
+<div
+        id="left_div"
+        style="
         background-color: white;
         border: 1px solid black;
         z-index: 998;
@@ -92,48 +92,60 @@
         top: 0;
         overflow-y: visible;
       "
-    >
-      <button class="btn btn-default">新增小用例接口</button>
-      <button class="btn btn-default">新增登录态接口</button>
-      <button class="btn btn-danger" style="float: right">关闭</button>
-      <div>
+>
+    <button class="btn btn-default">新增小用例接口</button>
+    <button class="btn btn-default">新增登录态接口</button>
+    <button class="btn btn-danger" style="float: right">关闭</button>
+    <div id="small_list">
         {# 小用例都在这儿#}
-        <div
-          style="margin-top: 5px; width: 90%; background-color: #f5f3f3"
-          class="btn btn-default"
-        >
-          小用例1
-        </div>
-        <div
-          style="margin-top: 5px; width: 90%; background-color: #f5f3f3"
-          class="btn btn-default"
-        >
-          小用例2
-        </div>
-        <div
-          style="margin-top: 5px; width: 90%; background-color: #f5f3f3"
-          class="btn btn-default"
-        >
-          小用例3
-        </div>
-      </div>
+        <p style="position: absolute;bottom: 0;left: 5px">
+            用例id: <span id="Case_id"></span>
+            用例名称: <span id="Case_name"></span>
+        </p>
     </div>
-    <script>
-      function refresh_left_div(params) {
+</div>
+<script>
+    function refresh_left_div(params) {
         // 刷新小用例列表专用
-      }
-      function show_small(case_id) {
+        let d = document.getElementById('small_list');
+        d.innerHTML = ''; // 清空旧数据
+        $.get(
+            "/get_small/",
+            {
+                case_id: case_id,
+            },
+            function (ret) {
+                // 开始解析ret,并展示
+                res = eval(res);
+                all_steps = res.all_steps;
+                for (var i = 0; i < all_steps.length; i++) {
+                    //这里写 生成小用例步骤的button代码
+                    var bu = document.createElement('button');
+                    bu.style = 'margin-top: 5px;width: 90%;background-color: #f5f3f3;';
+                    bu.className = 'btn btn-defaul';
+                    bu.innerText = all_steps[i].name;
+                    bu.id = 'step_btn_' + all_steps[i].id;
+                    d.appendChild(bu);
+                }
+            }
+        );
+    }
+
+    function show_small(case_id, Case_name) {
         if (document.getElementById("left_div").style.display == "none") {
-          $("#left_div").css("display", "block");
-          $("#left_div").animate({ right: "52%" }, "fast");
+            $("#left_div").css("display", "block");
+            $("#left_div").animate({right: "52%"}, "fast");
         } else {
-          $("#left_div").css("display", "none");
-          $("#left_div").animate({ right: "100%" }, "fast");
-          $("#left_div").css("display", "block");
-          $("#left_div").animate({ right: "52%" }, "fast");
+            $("#left_div").css("display", "none");
+            $("#left_div").animate({right: "100%"}, "fast");
+            $("#left_div").css("display", "block");
+            $("#left_div").animate({right: "52%"}, "fast");
         }
+
+        document.getElementById('Case_id').innerText = case_id;
+        document.getElementById('Case_name').innerText = Case_name;
         refresh_left_div(case_id);
-      }
-    </script>
-  </body>
+    }
+</script>
+</body>
 </html>

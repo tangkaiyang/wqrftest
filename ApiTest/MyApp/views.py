@@ -489,3 +489,11 @@ def copy_case(request, eid, oid):
     old_case = DB_cases.objects.filter(id=oid)[0]
     DB_cases.objects.create(project_id=old_case.project_id, name=old_case.name + "_副本")
     return HttpResponseRedirect('/cases/%s/' % eid)
+
+
+# 获取小用例步骤的数据
+def get_small(request):
+    case_id = request.GET['case_id']
+    steps = DB_step.objects.filter(Case_id=case_id).order_by('index')
+    ret = {"all_steps": list(steps.values("id", "name"))}
+    return HttpResponse(json.dumps(ret), content_type='application/json')

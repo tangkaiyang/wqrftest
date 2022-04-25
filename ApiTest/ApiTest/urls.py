@@ -55,4 +55,6 @@ urlpatterns = [
     url(r'^add_case/(?P<eid>.*)/$', add_case),  # 增加用例
     url(r'^del_case/(?P<eid>.*)/(?P<oid>.*)/$', del_case),  # 删除用例
     url(r'^copy_case/(?P<eid>.*)/(?P<oid>.*)/$', copy_case),  # 复制用例用例
+
+    url(r'^get_small/$', get_small),  # 获取小用例步骤的列表数据
 ]
