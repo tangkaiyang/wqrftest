@@ -57,4 +57,5 @@ urlpatterns = [
     url(r'^copy_case/(?P<eid>.*)/(?P<oid>.*)/$', copy_case),  # 复制用例用例
 
     url(r'^get_small/$', get_small),  # 获取小用例步骤的列表数据
+    url(r'^add_new_step/$', add_new_step),  # 新增小步骤接口
 ]

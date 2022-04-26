@@ -93,7 +93,7 @@
         overflow-y: visible;
       "
 >
-    <button class="btn btn-default">新增小用例接口</button>
+    <button class="btn btn-default" onclick="add_new_step()">新增小用例接口</button>
     <button class="btn btn-default">新增登录态接口</button>
     <button class="btn btn-danger" style="float: right">关闭</button>
     <div id="small_list">
@@ -105,18 +105,28 @@
     </div>
 </div>
 <script>
-    function refresh_left_div(params) {
+    function add_new_step() {
+        let Case_id = document.getElementById('Case_id').innerText;
+        $.get("/add_new_step/", {
+            "Case_id": Case_id,
+        }, function (ret) {
+            refresh_left_div(Case_id);
+        })
+
+    }
+
+    function refresh_left_div(case_id) {
         // 刷新小用例列表专用
         let d = document.getElementById('small_list');
         d.innerHTML = ''; // 清空旧数据
         $.get(
             "/get_small/",
             {
-                case_id: case_id,
+                'case_id': case_id,
             },
             function (ret) {
                 // 开始解析ret,并展示
-                res = eval(res);
+                res = eval(ret);
                 all_steps = res.all_steps;
                 for (var i = 0; i < all_steps.length; i++) {
                     //这里写 生成小用例步骤的button代码
@@ -143,7 +153,7 @@
         }
 
         document.getElementById('Case_id').innerText = case_id;
-        document.getElementById('Case_name').innerText = Case_name;
+        document.getElementById('Case_name').value = Case_name;
         refresh_left_div(case_id);
     }
 </script>

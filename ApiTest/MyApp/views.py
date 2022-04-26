@@ -497,3 +497,10 @@ def get_small(request):
     steps = DB_step.objects.filter(Case_id=case_id).order_by('index')
     ret = {"all_steps": list(steps.values("id", "name"))}
     return HttpResponse(json.dumps(ret), content_type='application/json')
+
+
+# 新增小步骤
+def add_new_step(request):
+    Case_id = request.GET['Case_id']
+    DB_step.objects.create(Case_id=Case_id, name='我是新步骤')
+    return HttpResponse('')
