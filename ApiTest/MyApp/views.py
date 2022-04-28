@@ -60,17 +60,14 @@ def child_json(eid, oid="", ooid=""):
         project = DB_project.objects.filter(id=oid)[0]
         apis = DB_apis.objects.filter(project_id=oid)
         res = {"project": project, "apis": apis}
-    if eid == "P_cases.html":
-        project = DB_project.objects.filter(id=oid)[0]
-        res = {"project": project}
     if eid == "P_project_set.html":
         project = DB_project.objects.filter(id=oid)[0]
         res = {"project": project}
     if eid == "P_cases.html":
         Cases = DB_cases.objects.filter(project_id=oid)
         project = DB_project.objects.filter(id=oid)[0]
-        res = {"project": project, "Cases": Cases}
-
+        apis = DB_apis.objects.filter(project_id=oid)
+        res = {"project": project, "Cases": Cases, "apis": apis}
     return res
 
 
@@ -544,3 +541,12 @@ def user_upload(request):
             destination.write(chunk)
 
     return HttpResponseRedirect('/home/')
+
+
+# 获取小步骤
+def get_step(request):
+    step_id = request.GET['step_id']
+    step = DB_step.objects.filter(id=step_id)
+    steplist = list(step.values())[0]
+
+    return HttpResponse(json.dumps(steplist), content_type='application/json')
