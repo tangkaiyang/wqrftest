@@ -550,3 +550,27 @@ def get_step(request):
     steplist = list(step.values())[0]
 
     return HttpResponse(json.dumps(steplist), content_type='application/json')
+
+
+# 保存小步骤
+def save_step(request):
+    step_id = request.GET['step_id']
+    name = request.GET['name']
+    index = request.GET['index']
+    step_method = request.GET['step_method']
+    step_url = request.GET['step_url']
+    step_host = request.GET['step_host']
+    step_header = request.GET['step_header']
+    step_body_method = request.GET['step_body_method']
+    step_api_body = request.GET['step_api_body']
+
+    DB_step.objects.filter(id=step_id).update(name=name,
+                                              index=index,
+                                              api_method=step_method,
+                                              api_url=step_url,
+                                              api_host=step_host,
+                                              api_header=step_header,
+                                              api_body_method=step_body_method,
+                                              api_body=step_api_body,
+                                              )
+    return HttpResponse('')

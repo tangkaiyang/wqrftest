@@ -61,4 +61,5 @@ urlpatterns = [
     url(r'^delete_step/(?P<eid>.*)/$', delete_step),  # 删除小步骤接口
     url(r'^user_upload/$', user_upload),  # 上传头像
     url(r'^get_step/$', get_step),  # 获取小步骤
+    url(r'^save_step/$', save_step),  # 保存小步骤
 ]
