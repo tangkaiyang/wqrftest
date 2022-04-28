@@ -58,4 +58,6 @@ urlpatterns = [
 
     url(r'^get_small/$', get_small),  # 获取小用例步骤的列表数据
     url(r'^add_new_step/$', add_new_step),  # 新增小步骤接口
+    url(r'^delete_step/(?P<eid>.*)/$', delete_step),  # 删除小步骤接口
+    url(r'^user_upload/$', user_upload),  # 上传头像
 ]

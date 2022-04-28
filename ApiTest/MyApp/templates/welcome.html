@@ -20,6 +20,23 @@
 {#        <h1 style="color: #fff9f4">a test-platform</h1>#}
 {#    </div>#}
 <nav id="navbar" class="">
+    <div style="color: white;margin-top: 5px;margin-bottom: 5px;text-align: center">
+        欢迎你: <span>{{ username }}</span>
+        <br>
+        <img src="/static/user_img/{{ userimg }}" alt="" style="width: 50%" class="img-circle img-thumbnail">
+        <a href="javascript:show_upload()" class="glyphicon glyphicon-pencil"></a>
+    </div>
+    <div>
+        <form action="/user_upload/" id="upload_file" method="post" enctype="multipart/form-data" style="display: none">
+            <input type="file" name="fileUpload" style="margin-left: 45px;width: 65px;height: 20px;font-size: xx-small;float: left">
+            <button onclick="upload_py()" style="color: black;width: 64px;height: 21px;font-size: xx-small"> 上传头像 </button>
+        </form>
+        <script>
+            function show_upload() {
+                document.getElementById('upload_file').style.display = 'block';
+            }
+        </script>
+    </div>
     <ul>
         <li>
             <a href="/project_list/">

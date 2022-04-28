@@ -8,6 +8,13 @@ from MyApp.models import *
 
 
 # Create your views here.
+def glodict(request):
+    userimg = str(request.user.id) + '.jpg'
+    print(userimg)
+    res = {"username": request.user.username, "userimg": userimg}
+    return res
+
+
 @login_required()
 def welcome(request):
     print('进来了!!')
@@ -22,7 +29,8 @@ def case_list(request):
 @login_required
 def home(request, log_id=''):
     print(request.user.id)
-    return render(request, 'welcome.html', {"whichHTML": "home.html", "oid": request.user.id, "ooid": log_id})
+    return render(request, 'welcome.html',
+                  {"whichHTML": "home.html", "oid": request.user.id, "ooid": log_id, **glodict(request)})
 
 
 def child(request, eid, oid, ooid):
@@ -115,11 +123,11 @@ def pei(request):
 
 
 def api_help(request):
-    return render(request, 'welcome.html', {"whichHTML": "help.html", "oid": ""})
+    return render(request, 'welcome.html', {"whichHTML": "help.html", "oid": "", **glodict(request)})
 
 
 def project_list(request):
-    return render(request, 'welcome.html', {'whichHTML': "project_list.html", "oid": ""})
+    return render(request, 'welcome.html', {'whichHTML': "project_list.html", "oid": "", **glodict(request)})
 
 
 # 删除项目
@@ -127,7 +135,11 @@ def delete_project(request):
     id = request.GET['id']
     DB_project.objects.filter(id=id).delete()
     DB_apis.objects.filter(project_id=id).delete()
-    DB_cases.objects.filter(project_id=id).delete()  # 删除关联用例
+
+    all_Case = DB_cases.objects.filter(project_id=id)
+    for i in all_Case:
+        DB_step.objects.filter(Case_id=i.id).delete()  # 删除步骤
+        i.delete()  # 删除用例
     return HttpResponse('')
 
 
@@ -139,17 +151,17 @@ def add_project(request):
 
 def open_apis(request, id):
     project_id = id
-    return render(request, 'welcome.html', {"whichHTML": "P_apis.html", "oid": project_id})
+    return render(request, 'welcome.html', {"whichHTML": "P_apis.html", "oid": project_id, **glodict(request)})
 
 
 def open_cases(request, id):
     project_id = id
-    return render(request, 'welcome.html', {"whichHTML": "P_cases.html", "oid": project_id})
+    return render(request, 'welcome.html', {"whichHTML": "P_cases.html", "oid": project_id, **glodict(request)})
 
 
 def open_project_set(request, id):
     project_id = id
-    return render(request, 'welcome.html', {"whichHTML": "P_project_set.html", "oid": project_id})
+    return render(request, 'welcome.html', {"whichHTML": "P_project_set.html", "oid": project_id, **glodict(request)})
 
 
 def save_project_set(request, id):
@@ -481,6 +493,7 @@ def add_case(request, eid):
 # 删除用例
 def del_case(request, eid, oid):
     DB_cases.objects.filter(id=oid).delete()
+    DB_step.objects.filter(Case_id=id).delete()  # 删除步骤
     return HttpResponseRedirect('/cases/%s/' % eid)
 
 
@@ -495,12 +508,39 @@ def copy_case(request, eid, oid):
 def get_small(request):
     case_id = request.GET['case_id']
     steps = DB_step.objects.filter(Case_id=case_id).order_by('index')
-    ret = {"all_steps": list(steps.values("id", "name"))}
+    ret = {"all_steps": list(steps.values("index", "id", "name"))}
     return HttpResponse(json.dumps(ret), content_type='application/json')
 
 
 # 新增小步骤
 def add_new_step(request):
     Case_id = request.GET['Case_id']
-    DB_step.objects.create(Case_id=Case_id, name='我是新步骤')
+    all_len = len(DB_step.objects.filter(Case_id=Case_id))
+    DB_step.objects.create(Case_id=Case_id, name='我是新步骤', index=all_len + 1)
     return HttpResponse('')
+
+
+# 删除小步骤
+def delete_step(request, eid):
+    step = DB_step.objects.filter(id=eid)[0]  # 获取待删除的step
+    index = step.index  # 获取目标index
+    Case_id = step.Case_id  # 获取目标所属大用例id
+    step.delete()  # 删除目标step
+    for i in DB_step.objects.filter(Case_id=Case_id).filter(index__gt=index):
+        i.index -= 1
+        i.save()
+    return HttpResponse('')
+
+
+# 上传头像
+def user_upload(request):
+    file = request.FILES.get("fileUpload", None)  # 靠name获取上传的文件,如果没有,避免报错,设置成None
+
+    if not file:
+        return HttpResponseRedirect('/home/')
+    new_name = str(request.user.id) + '.jpg'  # 设置好图片名称
+    with open("MyApp/static/user_img/" + new_name, 'wb+') as destination:  # 打开特定的文件进行二进制写操作
+        for chunk in file.chunks():  # 分块写入文件
+            destination.write(chunk)
+
+    return HttpResponseRedirect('/home/')
