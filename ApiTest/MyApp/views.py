@@ -1,5 +1,6 @@
 import json
 
+import pkg_resources
 import requests
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -10,7 +11,6 @@ from MyApp.models import *
 # Create your views here.
 def glodict(request):
     userimg = str(request.user.id) + '.jpg'
-    print(userimg)
     res = {"username": request.user.username, "userimg": userimg}
     return res
 
@@ -564,6 +564,12 @@ def save_step(request):
     step_body_method = request.GET['step_body_method']
     step_api_body = request.GET['step_api_body']
 
+    get_path = request.GET['get_path']
+    get_zz = request.GET['get_zz']
+    assert_zz = request.GET['assert_zz']
+    assert_qz = request.GET['assert_qz']
+    assert_path = request.GET['assert_path']
+
     DB_step.objects.filter(id=step_id).update(name=name,
                                               index=index,
                                               api_method=step_method,
@@ -572,5 +578,35 @@ def save_step(request):
                                               api_header=step_header,
                                               api_body_method=step_body_method,
                                               api_body=step_api_body,
+
+                                              get_path=get_path,
+                                              get_zz=get_zz,
+                                              assert_zz=assert_zz,
+                                              assert_qz=assert_qz,
+                                              assert_path=assert_path,
                                               )
     return HttpResponse('')
+
+
+# 步骤详情页获取接口
+def step_get_api(request):
+    api_id = request.GET['api_id']
+    api = DB_apis.objects.filter(id=api_id).values()[0]
+    return HttpResponse(json.dumps(api), content_type="application/json")
+
+
+# 运行大用例
+def Run_case(request):
+    Case_id = request.GET['Case_id']
+    Case = DB_cases.objects.filter(id=Case_id)[0]
+    from MyApp.run_case import run
+    run(Case_id,Case.name)
+
+    return HttpResponse('')
+
+
+# 查看报告
+def look_report(request, eid):
+    Case_id = eid
+
+    return render(request, 'Reports/%s.html' % Case_id)
