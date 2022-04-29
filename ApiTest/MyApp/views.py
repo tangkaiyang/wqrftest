@@ -54,11 +54,10 @@ def child_json(eid, oid="", ooid=""):
         date = DB_project.objects.all()
         res = {"projects": date}
     if eid == "P_apis.html":
-        print(DB_project.objects.all())
-        print(oid)
-        print(DB_project.objects.filter(id=oid))
         project = DB_project.objects.filter(id=oid)[0]
         apis = DB_apis.objects.filter(project_id=oid)
+        for i in apis:
+            i.short_url = i.api_url.split('?')[0][:50]
         res = {"project": project, "apis": apis}
     if eid == "P_project_set.html":
         project = DB_project.objects.filter(id=oid)[0]
@@ -599,8 +598,10 @@ def step_get_api(request):
 def Run_case(request):
     Case_id = request.GET['Case_id']
     Case = DB_cases.objects.filter(id=Case_id)[0]
+    steps = DB_step.objects.filter(Case_id=Case_id)
+    # print(Case_id, Case, steps)
     from MyApp.run_case import run
-    run(Case_id,Case.name)
+    run(Case_id, Case.name, steps)
 
     return HttpResponse('')
 
