@@ -37,7 +37,7 @@ class Test(unittest.TestCase):
 
         if api_body_method == 'none':
             pass
-        elif api_body_method == 'form-data' and api_body_method == 'x-www-form-urlencoded':
+        elif api_body_method == 'form-data' or api_body_method == 'x-www-form-urlencoded':
             rlist_body = re.findall(r"##(.*?)##", api_body)
             for i in rlist_body:
                 api_body = api_body.replace("##" + i + "##", str(eval(i)))
