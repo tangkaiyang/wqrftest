@@ -7,12 +7,14 @@ import requests
 
 from A_WQRFhtmlRunner import HTMLTestRunner
 
-import sys,os,django
+import sys, os, django
+
 path = '../ApiTest'
 sys.path.append(path)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ApiTest.settings")
 django.setup()
 from MyApp.models import *
+
 
 class Test(unittest.TestCase):
     '测试类'
@@ -33,7 +35,7 @@ class Test(unittest.TestCase):
         assert_path = step.assert_path
 
         mock_res = step.mock_res
-        ts_project_headers = step.public_header.split(',') # 获取公共请求头
+        ts_project_headers = step.public_header.split(',')  # 获取公共请求头
         if mock_res not in ['', None, 'None']:
             res = mock_res
         else:
@@ -73,6 +75,10 @@ class Test(unittest.TestCase):
             print('【body】：', api_body)
 
             ## 实际发送请求
+            # 处理host域名
+            if api_host[:4] == '全局域名':
+                project_host_id = api_host.split('-')[1]
+                api_host = DB_project_host.objects.filter(id=project_host_id)[0].host
             try:
                 header = json.loads(api_header)  # 处理header
             except:
@@ -127,6 +133,7 @@ class Test(unittest.TestCase):
                 response = requests.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
             response.encoding = "utf-8"
             res = response.text
+            DB_host.objects.update_or_create(host=api_host)
 
         # 对返回值res进行提取：
 

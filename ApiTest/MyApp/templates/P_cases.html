@@ -242,8 +242,18 @@ padding-left: 10px;width: 100%;height: 35px;" type="text" placeholder="url: 如 
         </li>
     </ul>
     <div class="input-group" style="margin-top: 45px;margin-left: 5%;width: 90%">
+        <datalist id="datalist_1">
+            {% for i in project_host %}
+                <option value="全局域名-{{ i.id }}" id="project_host_{{ i.id }}">{{ i.name }}: {{ i.host }}</option>
+            {% endfor %}
+
+            {% for i in hosts %}
+                <option value="{{ i.host }}" id="host_{{ i.id }}">{{ i.host }}</option>
+            {% endfor %}
+
+        </datalist>
         <span class="input-group-addon">host</span>
-        <input type="text" id="step_host" class="form-control">
+        <input list="datalist_1" autocomplete="off" type="text" id="step_host" class="form-control">
     </div>
     <div class="input-group" style="margin-top: 5px;margin-left: 5%;width: 90%">
         <span class="input-group-addon">header</span>
@@ -635,7 +645,7 @@ code:200"></textarea>
             }
 
             //判断关键数据是否符合规则
-            if (step_host.slice(0, 7) != 'http://' && step_host.slice(0, 8) != 'https://') {
+            if (step_host.slice(0, 7) != 'http://' && step_host.slice(0, 8) != 'https://' && ts_host.slice(0, 4) != '全局域名') {
                 alert('host必须以http://或https://开头！');
                 return
             }
