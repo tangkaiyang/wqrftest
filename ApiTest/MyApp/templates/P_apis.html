@@ -136,7 +136,7 @@ color: white;padding-left: 10px">
         </li>
 
         <li>
-            <button onclick="to_send()" type="button"
+            <button onclick="ts_send()" type="button"
                     style="height: 40px;width: 120px;"
                     class="btn btn-default"><span style="font-size: large">Send</span></button>
         </li>
@@ -508,13 +508,22 @@ color: white;padding-left: 10px">
         })
     }
 
-    function to_send() {
+    function ts_send() {
         // 获取接口的所有数据
         let api_name = document.getElementById('ts_api_name').value;
         let ts_method = document.getElementById('ts_method').value;
         let ts_url = document.getElementById('ts_url').value;
         let ts_host = document.getElementById('ts_host').value;
         let ts_header = document.getElementById('ts_header').value;
+
+        var project_headers = document.getElementById('ts_project_header_li').children;
+        var ts_project_headers = [];
+        for (var i = 0; i < project_headers.length; i++) {
+            if (project_headers[i].children[0].checked == true) {
+                ts_project_headers.push(project_headers[i].children[0].value)
+            }
+        }
+
         // 判断顶部的数据是否填充完整
         if (ts_method == '') {
             alert('请选择请求方式! ');
@@ -597,7 +606,8 @@ color: white;padding-left: 10px">
             'ts_host': ts_host,
             'ts_header': ts_header,
             'ts_body_method': ts_body_method,
-            'ts_api_body': ts_api_body
+            'ts_api_body': ts_api_body,
+            'ts_project_headers': ts_project_headers.toString(),
         }, function (ret) {
             // 点击response按钮
             $("li a[href='#response']")[0].click();

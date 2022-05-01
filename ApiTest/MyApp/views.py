@@ -69,7 +69,8 @@ def child_json(eid, oid="", ooid=""):
         Cases = DB_cases.objects.filter(project_id=oid)
         project = DB_project.objects.filter(id=oid)[0]
         apis = DB_apis.objects.filter(project_id=oid)
-        res = {"project": project, "Cases": Cases, "apis": apis}
+        project_header = DB_project_header.objects.filter(project_id=oid)
+        res = {"project": project, "Cases": Cases, "apis": apis, "project_header": project_header}
     return res
 
 
@@ -253,6 +254,7 @@ def Api_send(request):
     ts_api_body = request.GET['ts_api_body']
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
+    ts_project_headers = request.GET['ts_project_headers'].split(',')
     print(ts_body_method)
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
@@ -271,14 +273,10 @@ def Api_send(request):
         header = json.loads(ts_header)  # 处理header
     except:
         return HttpResponse('请求头不符合json格式')
-    # 写入到数据库请求记录表中
-    DB_apis_log.objects.create(user_id=request.user.id,
-                               api_method=ts_method,
-                               api_url=ts_url,
-                               api_header=ts_header,
-                               api_host=ts_host,
-                               body_method=ts_body_method,
-                               api_body=ts_api_body, )
+
+    for i in ts_project_headers:
+        project_header = DB_project_header.objects.filter(id=i)[0]
+        header[project_header.key] = project_header.value
     # 拼接完整url
     if ts_host and ts_host[-1] == '/':
         ts_host = ts_host[:-1]
@@ -566,6 +564,8 @@ def save_step(request):
     step_host = request.GET['step_host']
     step_header = request.GET['step_header']
 
+    ts_project_headers = request.GET['ts_project_headers']
+
     mock_res = request.GET['mock_res']
 
     step_body_method = request.GET['step_body_method']
@@ -583,6 +583,7 @@ def save_step(request):
                                               api_url=step_url,
                                               api_host=step_host,
                                               api_header=step_header,
+                                              public_header=ts_project_headers,
                                               mock_res=mock_res,
                                               api_body_method=step_body_method,
                                               api_body=step_api_body,
@@ -638,7 +639,7 @@ def save_project_header(request):
     for i in range(len(ids)):
         if names[i] != '':
             if ids[i] == 'new':
-                DB_project_header.objects.create(project_id=project_id,name=names[i],key=keys[i],value=values[i])
+                DB_project_header.objects.create(project_id=project_id, name=names[i], key=keys[i], value=values[i])
             else:
                 DB_project_header.objects.filter(id=ids[i]).update(name=names[i], key=keys[i], value=values[i])
         else:
@@ -646,4 +647,12 @@ def save_project_header(request):
                 DB_project_header.objects.filter(id=ids[i]).delete()
             except:
                 pass
+    return HttpResponse('')
+
+
+# 保存用例名称
+def save_case_name(request):
+    id = request.GET['id']
+    name = request.GET['name']
+    DB_cases.objects.filter(id=id).update(name=name)
     return HttpResponse('')

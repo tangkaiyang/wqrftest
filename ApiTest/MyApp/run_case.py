@@ -7,6 +7,12 @@ import requests
 
 from A_WQRFhtmlRunner import HTMLTestRunner
 
+import sys,os,django
+path = '../ApiTest'
+sys.path.append(path)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ApiTest.settings")
+django.setup()
+from MyApp.models import *
 
 class Test(unittest.TestCase):
     '测试类'
@@ -27,7 +33,7 @@ class Test(unittest.TestCase):
         assert_path = step.assert_path
 
         mock_res = step.mock_res
-
+        ts_project_headers = step.public_header.split(',') # 获取公共请求头
         if mock_res not in ['', None, 'None']:
             res = mock_res
         else:
@@ -71,6 +77,12 @@ class Test(unittest.TestCase):
                 header = json.loads(api_header)  # 处理header
             except:
                 header = eval(api_header)
+            # 在这遍历公共请求头,并把其加入到header的字典中
+            for i in ts_project_headers:
+                project_header = DB_project_header.objects.filter(id=i)[0]
+                header[project_header.key] = project_header.value
+
+            print(header)
 
             # 拼接完整url
             if api_host[-1] == '/' and api_url[0] == '/':  # 都有/
