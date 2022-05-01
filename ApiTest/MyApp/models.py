@@ -99,3 +99,13 @@ class DB_step(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class DB_project_header(models.Model):
+    project_id = models.CharField(max_length=10, null=True)  # 所属项目id
+    name = models.CharField(max_length=20, null=True)  # 请求头变量名字
+    key = models.CharField(max_length=20, null=True)  # 请求头head的key
+    value = models.TextField(null=True)  # 请求头的value,cookie内容可能很大
+
+    def __str__(self):
+        return self.name

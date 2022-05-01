@@ -65,4 +65,5 @@ urlpatterns = [
     url(r'^step_get_api/$', step_get_api),  # 步骤详情页获取接口数据
     url(r'^Run_Case/$', Run_case),  # 运行大用例
     url(r'^look_report/(?P<eid>.*)/$', look_report),  # 查看报告
+    url(r'^save_project_header/$', save_project_header),  # 保存项目公共请求头
 ]

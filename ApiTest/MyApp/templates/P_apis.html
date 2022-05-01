@@ -52,7 +52,7 @@
                 </div>
 
             </td>
-        <input type="text" id="api_error_{{ i.id }}" value="{{ i.api_body }}" style="display: none">
+            <input type="text" id="api_error_{{ i.id }}" value="{{ i.api_body }}" style="display: none">
         </tr>
     {% endfor %}
 
@@ -64,7 +64,7 @@ border: 1px solid #e7e7e7">
     <button type="button" class="btn btn-primary" onclick="document.location.href='/project_api_add/{{ project.id }}/'">
         新增
     </button>
-    <button type="button" class="btn btn-default">全局请求头</button>
+    <button type="button" onclick="project_header_div_show()" class="btn btn-default">全局请求头</button>
     <button type="button" class="btn btn-default">全局域名</button>
     <button type="button" class="btn btn-default">接口文档导入</button>
     <button type="button" class="btn btn-default">抓包导入</button>
@@ -152,21 +152,30 @@ color: white;padding-left: 10px">
         <li>
             <button type="button"
                     style="height: 40px;width: 60px;"
-                    class="btn btn-default"><span>Clear</span></button>
+                    class="btn btn-default"
+                    onclick="ts_clear_host()"><span>Clear</span></button>
         </li>
     </ul>
     <br>
     <br>
     <br>
     <ul class="nav navbar-nav" style="width: 98%">
-        <li style="width: -webkit-calc(100% - 63px)">
+        <li style="width: -webkit-calc(100% - 127px)">
             <input id="ts_header" style="color: black;padding-left: 10px;width: 100%;height: 40px;" type="text"
                    placeholder='header请求头: 如{"Content-Type":"application/json"}' value="">
         </li>
         <li>
             <button type="button"
                     style="height: 40px;width: 60px;"
-                    class="btn btn-default"><span>Clear</span></button>
+                    class="btn btn-default" onclick="ts_clear_header"><span>Clear</span></button>
+            <button type="button" onclick="ts_show_project_header()" style="height: 40px;width: 60px;"
+                    class="btn btn-default"><span>▼</span></button>
+        </li>
+        <li id="ts_project_header_li" style="display: none">
+            {% for i in project_header %}
+                <label style="margin-left: 5px;"><input id="checkbox_{{ i.id }}" value="{{ i.id }}"
+                                                        type="checkbox">{{ i.name }}</label>
+            {% endfor %}
         </li>
     </ul>
     <br><br><br>
@@ -310,6 +319,14 @@ color: white;padding-left: 10px">
             document.getElementById('ts_url').value = ret.api_url;
             document.getElementById('ts_host').value = ret.api_host;
             document.getElementById('ts_header').value = ret.api_header;
+            // 公共请求头
+            var project_headers = ret.public_header.split(',');
+            for (var i = 0; i < project_headers.length; i++) {
+                try {
+                    document.getElementById('checkbox_' + project_headers[i]).checked = 'checked';
+                } catch (e) {
+                }
+            }
             // 请求体编码格式
             // jquery触发onclick事件,dom触发click
             var body_method = '#' + ret.body_method;
@@ -368,6 +385,18 @@ color: white;padding-left: 10px">
         document.location.reload();
     }
 
+    function ts_clear_host() {
+        document.getElementById('ts_host').value = '';
+    }
+
+    function ts_clear_header() {
+        document.getElementById('ts_header').value = '';
+    }
+
+    function ts_show_project_header() {
+        document.getElementById('ts_project_header_li').style.display = 'block';
+    }
+
     function ts_save() {
         // 获取接口设置数据
         let api_name = document.getElementById('ts_api_name').value;
@@ -376,6 +405,14 @@ color: white;padding-left: 10px">
         let ts_host = document.getElementById('ts_host').value;
         let ts_header = document.getElementById('ts_header').value;
         {#alert(ts_method+ts_url+ts_host+ts_header)#}
+
+        var project_headers = document.getElementById('ts_project_header_li').children;
+        var ts_project_headers = [];
+        for (var i = 0; i < project_headers.length; i++) {
+            if (project_headers[i].children[0].checked == true) {
+                ts_project_headers.push(project_headers[i].children[0].value)
+            }
+        }
         // 判断顶部的数据是否填充完整
         if (api_name == '') {
             alert('请输入接口名称! ');
@@ -464,7 +501,8 @@ color: white;padding-left: 10px">
             'ts_host': ts_host,
             'ts_header': ts_header,
             'ts_body_method': ts_body_method,
-            'ts_api_body': ts_api_body
+            'ts_api_body': ts_api_body,
+            'ts_project_headers': ts_project_headers.toString(),
         }, function (ret) {
             document.location.reload();
         })
@@ -689,6 +727,95 @@ color: white;padding-left: 10px">
         }
     }
 </script>
+
+{#全局请求头#}
+<div id="project_header_div" style="display: none;border-radius: 5px;width: 70%;height: 70%;
+position: absolute;left: 15%;top: 15%;box-shadow: 4px 4px 8px grey;
+padding-left: 10px;background-color: white">
+    <div class="btn-group" style="float: right">
+        <button onclick="project_header_save()" type="button" class="btn btn-success">保存</button>
+        <button onclick="project_header_close()" type="button" class="btn btn-default">取消</button>
+    </div>
+    <h4>请设置本项目的全局公共请求头</h4>
+    <div id="header_plan">
+        {% for i in project_header %}
+            <input type="text" name="header_id" value="{{ i.id }}" style="display: none">
+            <input type="text" name="header_name" value="{{ i.name }}" style="width: 20%;margin-top: 3px"
+                   placeholder="请求头name"> = {"
+            <input type="text" name="header_key" value="{{ i.key }}" style="width: 15%" placeholder="请求头name"> " : "
+            <input type="text" name="header_value" value="{{ i.value }}" style="width: 50%" placeholder="请求头name"> "}
+        {% endfor %}
+
+    </div>
+    <br>
+    <button onclick="add_project_header()">新增</button>
+</div>
+<script>
+    function project_header_div_show() {
+        document.getElementById('project_header_div').style.display = 'block';
+    }
+
+    function project_header_close() {
+        document.location.reload();
+    }
+
+    function project_header_save() {
+        var ids = document.getElementsByName('header_id');
+        var names = document.getElementsByName('header_name');
+        var keys = document.getElementsByName('header_key');
+        var values = document.getElementsByName('header_value');
+        var req_ids = [];
+        var req_names = [];
+        var req_keys = [];
+        var req_values = [];
+
+        for (var i = 0; i < names.length; i++) {
+            req_names.push(names[i].value);
+            req_keys.push(keys[i].value);
+            req_values.push(values[i].value);
+            req_ids.push(ids[i].value);
+        }
+
+        $.get('/save_project_header/', {
+            "project_id": "{{ project.id }}",
+            "req_names": req_names.toString(),
+            "req_keys": req_keys.toString(),
+            "req_values": req_values.toString(),
+            "req_ids": req_ids.toString(),
+        }, function (ret) {
+            document.location.reload();
+        })
+    }
+
+    function add_project_header() {
+        var header_plan = document.getElementById('header_plan');
+        var i0 = document.createElement('input');
+        i0.style = 'display: none';
+        i0.name = 'header_id';
+        i0.value = 'new';
+        var i1 = document.createElement('input');
+        i1.style = 'width: 20%;margin-top: 3px';
+        i1.placeholder = '请求头name';
+        i1.name = 'header_name';
+        var i2 = document.createElement('input');
+        i2.style = 'width: 15%';
+        i2.placeholder = '请求头key';
+        i2.name = 'header_key';
+        var i3 = document.createElement('input');
+        i3.style = 'width: 50%';
+        i3.placeholder = '请求头value';
+        i3.name = 'header_value';
+        header_plan.appendChild(i0);
+        header_plan.appendChild(i1);
+        header_plan.appendChild(document.createTextNode(' = {" '));
+        header_plan.appendChild(i2);
+        header_plan.appendChild(document.createTextNode(' " : " '));
+        header_plan.appendChild(i3);
+        header_plan.appendChild(document.createTextNode(' "}'));
+        header_plan.appendChild(document.createElement("br"));
+    }
+</script>
+
 <div id="mengceng" style="display: none;opacity: 0.5;position: absolute;left: 0;top: 100px;
 background-color: grey;width: 100%"></div>
 <script>

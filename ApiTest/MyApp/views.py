@@ -28,7 +28,6 @@ def case_list(request):
 
 @login_required
 def home(request, log_id=''):
-    print(request.user.id)
     return render(request, 'welcome.html',
                   {"whichHTML": "home.html", "oid": request.user.id, "ooid": log_id, **glodict(request)})
 
@@ -61,7 +60,8 @@ def child_json(eid, oid="", ooid=""):
                 i.short_url = i.api_url.split('?')[0][:50]
             except:
                 i.short_url = ''
-        res = {"project": project, "apis": apis}
+        project_header = DB_project_header.objects.filter(project_id=oid)
+        res = {"project": project, "apis": apis, "project_header": project_header}
     if eid == "P_project_set.html":
         project = DB_project.objects.filter(id=oid)[0]
         res = {"project": project}
@@ -213,6 +213,7 @@ def Api_save(request):
     ts_header = request.GET['ts_header']
     ts_body_method = request.GET['ts_body_method']
     # ts_api_body = request.GET['ts_api_body']
+    ts_project_headers = request.GET['ts_project_headers']
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
         ts_body_method = api.last_body_method
@@ -227,7 +228,8 @@ def Api_save(request):
         api_header=ts_header,
         api_host=ts_host,
         body_method=ts_body_method,
-        api_body=ts_api_body
+        api_body=ts_api_body,
+        public_header=ts_project_headers,
     )
     # 返回
     return HttpResponse('success')
@@ -618,3 +620,30 @@ def look_report(request, eid):
     Case_id = eid
 
     return render(request, 'Reports/%s.html' % Case_id)
+
+
+# 保存项目公共请求头
+def save_project_header(request):
+    project_id = request.GET['project_id']
+    req_names = request.GET['req_names']
+    req_keys = request.GET['req_keys']
+    req_values = request.GET['req_values']
+    req_ids = request.GET['req_ids']
+
+    names = req_names.split(',')
+    keys = req_keys.split(',')
+    values = req_values.split(',')
+    ids = req_ids.split(',')
+
+    for i in range(len(ids)):
+        if names[i] != '':
+            if ids[i] == 'new':
+                DB_project_header.objects.create(project_id=project_id,name=names[i],key=keys[i],value=values[i])
+            else:
+                DB_project_header.objects.filter(id=ids[i]).update(name=names[i], key=keys[i], value=values[i])
+        else:
+            try:
+                DB_project_header.objects.filter(id=ids[i]).delete()
+            except:
+                pass
+    return HttpResponse('')
