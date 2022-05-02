@@ -75,4 +75,6 @@ urlpatterns = [
 
     # ------------------小工具-----------------
     url(r'^tools_zhengjiao/$', zhengjiao), # 进入小工具页面
+    url(r'^zhengjiao_play/$', zhengjiao_play), # 正交工具运行
+    url(r'^zhengjiao_excel/$', zhengjiao_excel), # 正交工具导出
 ]
