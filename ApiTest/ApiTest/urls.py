@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 from MyApp.views import *
+from MyApp.views_tools import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -68,4 +69,10 @@ urlpatterns = [
     url(r'^save_project_header/$', save_project_header),  # 保存项目公共请求头
     url(r'^save_case_name/$', save_case_name),  # 保存用例名称
     url(r'^save_project_host/$', save_project_host),  # 保存项目公共域名
+    url(r'^project_get_login/$', project_get_login),  # 获取项目登录态接口
+    url(r'^project_login_save/$', project_login_save),  # 保存项目登录态接口
+    url(r'^project_login_send/$', project_login_send),  # 调试请求登录态接口
+
+    # ------------------小工具-----------------
+    url(r'^tools_zhengjiao/$', zhengjiao), # 进入小工具页面
 ]
