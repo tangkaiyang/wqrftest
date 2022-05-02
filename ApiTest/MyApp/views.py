@@ -1,6 +1,5 @@
 import json
 
-import pkg_resources
 import requests
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
@@ -17,8 +16,6 @@ def glodict(request):
 
 @login_required()
 def welcome(request):
-    print('进来了!!')
-    # return HttpResponse('进来了!!!')
     return render(request, "welcome.html")
 
 
@@ -33,7 +30,6 @@ def home(request, log_id=''):
 
 
 def child(request, eid, oid, ooid):
-    print(eid)
     res = child_json(eid, oid, ooid)
     return render(request, eid, res)
 
@@ -308,6 +304,16 @@ def Api_send(request):
             for i in eval(ts_api_body):
                 payload[i[0]] = i[1]
             response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+        elif ts_body_method == 'GraphQL':
+            header['Content-Type'] = 'application/json'
+            query = ts_api_body.split('*WQRF*')[0]
+            graphql = ts_api_body.split('*WQRF*')[1]
+            try:
+                eval(graphql)
+            except:
+                graphql = '{}'
+            payload = '{"query": "%s", "variables": %s}' % {query, graphql}
+            response = requests.request(ts_method.upper(), url, headers=header, data=payload)
         else:
             if ts_body_method == 'Text':
                 header['Content-Type'] = 'text/plain'
@@ -452,6 +458,16 @@ def Api_send_home(request):
             payload = {}
             for i in eval(ts_api_body):
                 payload[i[0]] = i[1]
+            response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+        elif ts_body_method == 'GraphQL':
+            header['Content-Type'] = 'application/json'
+            query = ts_api_body.split('*WQRF*')[0]
+            graphql = ts_api_body.split('*WQRF*')[1]
+            try:
+                eval(graphql)
+            except:
+                graphql = '{}'
+            payload = '{"query": "%s", "variables": %s}' % {query, graphql}
             response = requests.request(ts_method.upper(), url, headers=header, data=payload)
 
         else:  # 这时肯定是raw的五个子选项：
