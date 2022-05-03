@@ -36,6 +36,8 @@ class Test(unittest.TestCase):
 
         mock_res = step.mock_res
         ts_project_headers = step.public_header.split(',')  # 获取公共请求头
+        if api_header == "":
+            api_header = {}
         if mock_res not in ['', None, 'None']:
             res = mock_res
         else:
@@ -115,36 +117,48 @@ class Test(unittest.TestCase):
                 ## url插入
                 if '?' not in url:
                     url += '?'
-                    for i in login_res.keys():
-                        url += i + '=' + login_res[i] + '&'
+                    if type(login_res) == dict:
+                        for i in login_res.keys():
+                            url += i + '=' + login_res[i] + '&'
                 else:  # 证明已经有参数了
-                    for i in login_res.keys():
-                        url += '&' + i + '=' + login_res[i]
+                    if type(login_res) == dict:
+                        for i in login_res.keys():
+                            url += '&' + i + '=' + login_res[i]
                 ## header插入
-                header.update(login_res)
+                if type(login_res) == dict:
+                    header.update(login_res)
             else:
                 login_res = {}
 
             if api_body_method == 'none' or api_body_method == 'null':
-                response = requests.request(api_method.upper(), url, headers=header, data={})
+                if type(login_res) == dict:
+                    response = requests.request(api_method.upper(), url, headers=header, data={})
+                else:
+                    response = login_res.request(api_method.upper(), url, headers=header, data={})
 
             elif api_body_method == 'form-data':
                 files = []
                 payload = {}
                 for i in eval(api_body):
                     payload[i[0]] = i[1]
-                for i in login_res.keys():
-                    payload[i] = login_res[i]
-                response = requests.request(api_method.upper(), url, headers=header, data=payload, files=files)
+                if type(login_res) == dict:
+                    for i in login_res.keys():
+                        payload[i] = login_res[i]
+                    response = requests.request(api_method.upper(), url, headers=header, data=payload, files=files)
+                else:
+                    response = login_res.request(api_method.upper(), url, headers=header, data=payload, files=files)
 
             elif api_body_method == 'x-www-form-urlencoded':
                 header['Content-Type'] = 'application/x-www-form-urlencoded'
                 payload = {}
                 for i in eval(api_body):
                     payload[i[0]] = i[1]
-                for i in login_res.keys():
-                    payload[i] = login_res[i]
-                response = requests.request(api_method.upper(), url, headers=header, data=payload)
+                if type(login_res) == dict:
+                    for i in login_res.keys():
+                        payload[i] = login_res[i]
+                    response = requests.request(api_method.upper(), url, headers=header, data=payload)
+                else:
+                    response = login_res.request(api_method.upper(), url, headers=header, data=payload)
             elif api_body_method == 'GraphQL':
                 header['Content-Type'] = 'application/json'
                 query = api_body_method.split('*WQRF*')[0]
@@ -154,7 +168,10 @@ class Test(unittest.TestCase):
                 except:
                     graphql = '{}'
                 payload = '{"query": "%s", "variables": %s}' % {query, graphql}
-                response = requests.request(api_method.upper(), url, headers=header, data=payload)
+                if type(login_res) == dict:
+                    response = requests.request(api_method.upper(), url, headers=header, data=payload)
+                else:
+                    response = login_res.request(api_method.upper(), url, headers=header, data=payload)
 
             else:  # 这时肯定是raw的五个子选项：
                 if api_body_method == 'Text':
@@ -175,7 +192,10 @@ class Test(unittest.TestCase):
 
                 if api_body_method == 'Xml':
                     header['Content-Type'] = 'text/plain'
-                response = requests.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
+                if type(login_res) == dict:
+                    response = requests.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
+                else:
+                    response = login_res.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
             response.encoding = "utf-8"
             res = response.text
             DB_host.objects.update_or_create(host=api_host)
