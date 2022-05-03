@@ -93,8 +93,8 @@ border: 1px solid #e7e7e7">
     }
 
     function save_bz() {
-        let id = document.getElementById('which_api').value;
-        let bz_value = document.getElementById('bz_value').value;
+        var id = document.getElementById('which_api').value;
+        var bz_value = document.getElementById('bz_value').value;
         $.get('/save_bz/', {
             'api_id': id,
             'bz_value': bz_value
@@ -118,7 +118,12 @@ color: white;padding-left: 10px">
     <h4>接口: <small id="ts_api_id" style="color: greenyellow"></small>-<input placeholder="请在此输入接口名称" type="text"
                                                                              id="ts_api_name"
                                                                              style="padding-left: 5px;width: 50%;color: #329104">
+        <select name="ts_login" id="ts_login" style="color: black;font-size: medium">
+            <option value="no" id="ts_login_no">不加登录态</option>
+            <option value="yes" id="ts_login_yes">加登录态</option>
+        </select>
     </h4>
+
     <ul class="nav navbar-nav" style="width: 98%">
         <li>
             <select id="ts_method" style="height: 40px;" class="form-control">
@@ -312,6 +317,7 @@ color: white;padding-left: 10px">
         document.getElementById('ts_url').value = '';
         document.getElementById('ts_host').value = '';
         document.getElementById('ts_header').value = '{}';
+        document.getElementById('ts_login').value = 'no';
         // 开始初始化请求体编码格式部分:
         document.getElementById('click_none').click(); // 点击none子标签
         document.getElementById('mytbody').innerHTML = '<tr><td></td><td></td></tr>'
@@ -349,12 +355,18 @@ color: white;padding-left: 10px">
             document.getElementById('ts_url').value = ret.api_url;
             document.getElementById('ts_host').value = ret.api_host;
             document.getElementById('ts_header').value = ret.api_header;
+            if (ret.api_login != null && ret.api_login != '') {
+                document.getElementById('ts_login').value = ret.api_login;
+            }
             // 公共请求头
-            var project_headers = ret.public_header.split(',');
-            for (var i = 0; i < project_headers.length; i++) {
-                try {
-                    document.getElementById('checkbox_' + project_headers[i]).checked = 'checked';
-                } catch (e) {
+            if (ret.public_header != null) {
+
+                var project_headers = ret.public_header.split(',');
+                for (var i = 0; i < project_headers.length; i++) {
+                    try {
+                        document.getElementById('checkbox_' + project_headers[i]).checked = 'checked';
+                    } catch (e) {
+                    }
                 }
             }
             // 请求体编码格式
@@ -435,11 +447,12 @@ color: white;padding-left: 10px">
 
     function ts_save() {
         // 获取接口设置数据
-        let api_name = document.getElementById('ts_api_name').value;
-        let ts_method = document.getElementById('ts_method').value;
-        let ts_url = document.getElementById('ts_url').value;
-        let ts_host = document.getElementById('ts_host').value;
-        let ts_header = document.getElementById('ts_header').value;
+        var api_name = document.getElementById('ts_api_name').value;
+        var ts_method = document.getElementById('ts_method').value;
+        var ts_url = document.getElementById('ts_url').value;
+        var ts_host = document.getElementById('ts_host').value;
+        var ts_header = document.getElementById('ts_header').value;
+        var ts_login = document.getElementById('ts_login').value;
         {#alert(ts_method+ts_url+ts_host+ts_header)#}
 
         var project_headers = document.getElementById('ts_project_header_li').children;
@@ -480,20 +493,20 @@ color: white;padding-left: 10px">
             }
         }
 
-        let ts_body_method = $('ul#myTab li[class="active"]')[0].innerText;
+        var ts_body_method = $('ul#myTab li[class="active"]')[0].innerText;
         console.log(ts_body_method);
-        let ts_api_body = '';
+        var ts_api_body = '';
         if (ts_body_method == 'none') {
             ts_api_body = ''
         }
         if (ts_body_method == 'form-data') {
             ts_api_body = []; //新建这个空列表用来存放后续的数据
-            let tbody_ = $("table#mytable tbody")[0]; //获取该表格的内容部分
-            let trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
-            for (let i = 0; i < trlist.length; i++) {
-                let tdarr = trlist[i].children; // 获取tr下的两个td
-                let key = tdarr[0].innerText; // 获取key
-                let value = tdarr[1].innerText; // 获取value
+            var tbody_ = $("table#mytable tbody")[0]; //获取该表格的内容部分
+            var trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
+            for (var i = 0; i < trlist.length; i++) {
+                var tdarr = trlist[i].children; // 获取tr下的两个td
+                var key = tdarr[0].innerText; // 获取key
+                var value = tdarr[1].innerText; // 获取value
                 ts_api_body.push([key, value]); // 作为一个数组,存放到这个大数组里
             }
             ts_api_body = JSON.stringify(ts_api_body);
@@ -501,12 +514,12 @@ color: white;padding-left: 10px">
         }
         if (ts_body_method == 'x-www-form-urlencoded') {
             ts_api_body = []; //新建这个空列表用来存放后续的数据
-            let tbody_ = $("table#mytable2 tbody")[0]; //获取该表格的内容部分
-            let trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
-            for (let i = 0; i < trlist.length; i++) {
-                let tdarr = trlist[i].children; // 获取tr下的两个td
-                let key = tdarr[0].innerText; // 获取key
-                let value = tdarr[1].innerText; // 获取value
+            var tbody_ = $("table#mytable2 tbody")[0]; //获取该表格的内容部分
+            var trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
+            for (var i = 0; i < trlist.length; i++) {
+                var tdarr = trlist[i].children; // 获取tr下的两个td
+                var key = tdarr[0].innerText; // 获取key
+                var value = tdarr[1].innerText; // 获取value
                 ts_api_body.push([key, value]); // 作为一个数组,存放到这个大数组里
             }
             ts_api_body = JSON.stringify(ts_api_body);
@@ -532,7 +545,7 @@ color: white;padding-left: 10px">
             body_plan_G_Q = document.getElementById('body_plan_G_Q').value;
             ts_api_body = body_plan_G_Q + '*WQRF*' + body_plan_G_G;
         }
-        let api_id = document.getElementById('ts_api_id').innerText; // 获取到接口的id
+        var api_id = document.getElementById('ts_api_id').innerText; // 获取到接口的id
         console.log(ts_api_body);
         $.get('/Api_save/', {
             'api_name': api_name,
@@ -540,6 +553,7 @@ color: white;padding-left: 10px">
             'ts_method': ts_method,
             'ts_url': ts_url,
             'ts_host': ts_host,
+            'ts_logn': ts_login,
             'ts_header': ts_header,
             'ts_body_method': ts_body_method,
             'ts_api_body': ts_api_body,
@@ -551,11 +565,13 @@ color: white;padding-left: 10px">
 
     function ts_send() {
         // 获取接口的所有数据
-        let api_name = document.getElementById('ts_api_name').value;
-        let ts_method = document.getElementById('ts_method').value;
-        let ts_url = document.getElementById('ts_url').value;
-        let ts_host = document.getElementById('ts_host').value;
-        let ts_header = document.getElementById('ts_header').value;
+        var api_name = document.getElementById('ts_api_name').value;
+        var ts_method = document.getElementById('ts_method').value;
+        var ts_url = document.getElementById('ts_url').value;
+        var ts_host = document.getElementById('ts_host').value;
+        var ts_header = document.getElementById('ts_header').value;
+        var ts_login = document.getElementById('ts_login').value;
+
 
         var project_headers = document.getElementById('ts_project_header_li').children;
         var ts_project_headers = [];
@@ -592,19 +608,19 @@ color: white;padding-left: 10px">
             }
         }
 
-        let ts_body_method = $('ul#myTab li[class="active"]')[0].innerText;
-        let ts_api_body = '';
+        var ts_body_method = $('ul#myTab li[class="active"]')[0].innerText;
+        var ts_api_body = '';
         if (ts_body_method == 'none') {
             ts_api_body = ''
         }
         if (ts_body_method == 'form-data') {
             ts_api_body = []; //新建这个空列表用来存放后续的数据
-            let tbody_ = $("table#mytable tbody")[0]; //获取该表格的内容部分
-            let trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
-            for (let i = 0; i < trlist.length; i++) {
-                let tdarr = trlist[i].children; // 获取tr下的两个td
-                let key = tdarr[0].innerText; // 获取key
-                let value = tdarr[1].innerText; // 获取value
+            var tbody_ = $("table#mytable tbody")[0]; //获取该表格的内容部分
+            var trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
+            for (var i = 0; i < trlist.length; i++) {
+                var tdarr = trlist[i].children; // 获取tr下的两个td
+                var key = tdarr[0].innerText; // 获取key
+                var value = tdarr[1].innerText; // 获取value
                 ts_api_body.push([key, value]); // 作为一个数组,存放到这个大数组里
             }
             ts_api_body = JSON.stringify(ts_api_body);
@@ -612,12 +628,12 @@ color: white;padding-left: 10px">
         }
         if (ts_body_method == 'x-www-form-urlencoded') {
             ts_api_body = []; //新建这个空列表用来存放后续的数据
-            let tbody_ = $("table#mytable2 tbody")[0]; //获取该表格的内容部分
-            let trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
-            for (let i = 0; i < trlist.length; i++) {
-                let tdarr = trlist[i].children; // 获取tr下的两个td
-                let key = tdarr[0].innerText; // 获取key
-                let value = tdarr[1].innerText; // 获取value
+            var tbody_ = $("table#mytable2 tbody")[0]; //获取该表格的内容部分
+            var trlist = tbody_.children; //获取下面所有tr,每个tr就是一个键值对
+            for (var i = 0; i < trlist.length; i++) {
+                var tdarr = trlist[i].children; // 获取tr下的两个td
+                var key = tdarr[0].innerText; // 获取key
+                var value = tdarr[1].innerText; // 获取value
                 ts_api_body.push([key, value]); // 作为一个数组,存放到这个大数组里
             }
             ts_api_body = JSON.stringify(ts_api_body);
@@ -643,9 +659,10 @@ color: white;padding-left: 10px">
             body_plan_G_Q = document.getElementById('body_plan_G_Q').value;
             ts_api_body = body_plan_G_Q + '*WQRF*' + body_plan_G_G;
         }
-        let api_id = document.getElementById('ts_api_id').innerText; // 获取到接口的id
+        var api_id = document.getElementById('ts_api_id').innerText; // 获取到接口的id
         $.get('/Api_send/', {
             'api_name': api_name,
+            'ts_login': api_login,
             'api_id': api_id,
             'ts_method': ts_method,
             'ts_url': ts_url,
@@ -740,7 +757,7 @@ color: white;padding-left: 10px">
                         $.extend(true, new_body, s);
                         new_body[i][1] = eval(r[j]);
                         console.log(new_body);
-                        let span_text = '替换: ' + new_body[i][0] + '-->' + r[j];
+                        var span_text = '替换: ' + new_body[i][0] + '-->' + r[j];
 
                         $.get('/error_request', {
                             'api_id': api_id,
@@ -767,7 +784,7 @@ color: white;padding-left: 10px">
                         $.extend(true, new_body, s);
                         new_body[i] = eval(r[j]);
                         console.log(new_body);
-                        let span_text = '替换: ' + i + '-->' + r[j];
+                        var span_text = '替换: ' + i + '-->' + r[j];
                         $.get('/error_request', {
                             'api_id': api_id,
                             'new_body': JSON.stringify(new_body),

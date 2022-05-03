@@ -98,6 +98,33 @@ class Test(unittest.TestCase):
             else:  # 肯定有一个有/
                 url = api_host + api_url
 
+            # 登陆态代码：
+            api_login = step.api_login  # 获取登陆开关
+            if api_login == 'yes':  # 需要判断
+                try:
+                    eval("login_res")
+                    print('已调用过')
+                except:
+                    print('未调用过')
+                    from MyApp.views import project_login_send_for_other
+                    project_id = DB_cases.objects.filter(id=DB_step.objects.filter(id=step.id)[0].Case_id)[0].project_id
+                    global login_res
+                    login_res = project_login_send_for_other(project_id)
+                print(login_res)
+                # 开始插入代码url/header/body
+                ## url插入
+                if '?' not in url:
+                    url += '?'
+                    for i in login_res.keys():
+                        url += i + '=' + login_res[i] + '&'
+                else:  # 证明已经有参数了
+                    for i in login_res.keys():
+                        url += '&' + i + '=' + login_res[i]
+                ## header插入
+                header.update(login_res)
+            else:
+                login_res = {}
+
             if api_body_method == 'none' or api_body_method == 'null':
                 response = requests.request(api_method.upper(), url, headers=header, data={})
 
@@ -106,6 +133,8 @@ class Test(unittest.TestCase):
                 payload = {}
                 for i in eval(api_body):
                     payload[i[0]] = i[1]
+                for i in login_res.keys():
+                    payload[i] = login_res[i]
                 response = requests.request(api_method.upper(), url, headers=header, data=payload, files=files)
 
             elif api_body_method == 'x-www-form-urlencoded':
@@ -113,6 +142,8 @@ class Test(unittest.TestCase):
                 payload = {}
                 for i in eval(api_body):
                     payload[i[0]] = i[1]
+                for i in login_res.keys():
+                    payload[i] = login_res[i]
                 response = requests.request(api_method.upper(), url, headers=header, data=payload)
             elif api_body_method == 'GraphQL':
                 header['Content-Type'] = 'application/json'
@@ -133,6 +164,10 @@ class Test(unittest.TestCase):
                     header['Content-Type'] = 'text/plain'
 
                 if api_body_method == 'Json':
+                    api_body = json.loads(api_body)
+                    for i in login_res.keys():
+                        api_body[i] = login_res[i]
+                    api_body = json.dumps((api_body))
                     header['Content-Type'] = 'text/plain'
 
                 if api_body_method == 'Html':
