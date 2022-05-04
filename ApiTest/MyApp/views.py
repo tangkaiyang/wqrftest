@@ -95,6 +95,8 @@ def child_json(eid, oid="", ooid=""):
         project_host = DB_project_host.objects.filter(project_id=oid)
         res = {"project": project, "Cases": Cases, "apis": apis, "project_header": project_header, "hosts": hosts,
                "project_host": project_host}
+    if eid == "P_global_data.html":
+        pass
     return res
 
 
@@ -1078,10 +1080,16 @@ def search(request):
 
     # 项目名搜哦所
     projects = DB_project.objects.filter(name__contains=key)  # 获取name包含key的所有项目
-    plist = [{"url": "/apis/%s/"%i.id, "text": i.name, "type": "project"} for i in projects]
+    plist = [{"url": "/apis/%s/" % i.id, "text": i.name, "type": "project"} for i in projects]
     # 接口名搜索
     apis = DB_apis.objects.filter(name__contains=key)  # 获取name包含key的所有接口
-    alist = [{"url": "/apis/%s/" %i.project_id, "text": i.name, "type": "api"} for i in apis]
+    alist = [{"url": "/apis/%s/" % i.project_id, "text": i.name, "type": "api"} for i in apis]
 
     res = {"results": plist + alist}
     return HttpResponse(json.dumps(res), content_type='application/json')
+
+
+# 进入全局变量
+def global_data(request, id):
+    project_id = id
+    return render(request, 'welcome.html', {"whichHTML": "P_global_data.html", "oid": project_id, **glodict(request)})

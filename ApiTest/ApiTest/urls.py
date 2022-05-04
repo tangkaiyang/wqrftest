@@ -75,6 +75,8 @@ urlpatterns = [
     url(r'^Home_save_api/$', Home_save_api),  # 首页保存请求数据
     url(r'^search/$', search),  # 首页搜索功能
 
+    url(r'^global_data/(?P<id>.*)/$', global_data), # 进入全局变量
+
     # ------------------小工具-----------------
     url(r'^tools_zhengjiao/$', zhengjiao), # 进入小工具页面
     url(r'^zhengjiao_play/$', zhengjiao_play), # 正交工具运行
