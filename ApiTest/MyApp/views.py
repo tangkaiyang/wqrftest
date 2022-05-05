@@ -813,17 +813,20 @@ def save_project_host(request):
     return HttpResponse('')
 
 
-# 获取项目登录态
+# 获取项目登陆态
 def project_get_login(request):
     project_id = request.GET['project_id']
     try:
         login = DB_login.objects.filter(project_id=project_id).values()[0]
     except:
-        login = {}
+        login = {"project_id": project_id, "api_method": "none", "api_url": "", "api_header": "{}", "api_host": "",
+                 "body_method": "none",
+                 "api_body": "",
+                 "set": ""}
     return HttpResponse(json.dumps(login), content_type='application/json')
 
 
-# 保存项目登录态接口
+# 保存登陆态接口
 def project_login_save(request):
     # 提取所有数据
     project_id = request.GET['project_id']
@@ -835,14 +838,17 @@ def project_login_save(request):
     login_api_body = request.GET['login_api_body']
     login_response_set = request.GET['login_response_set']
     # 保存数据
-    DB_login.objects.filter(project_id=project_id).update(
-        api_method=login_method,
-        api_url=login_url,
-        api_header=login_header,
-        api_host=login_host,
-        body_method=login_body_method,
-        api_body=login_api_body,
-        set=login_response_set,
+    DB_login.objects.update_or_create(
+        defaults={
+            "api_method": login_method,
+            "api_url": login_url,
+            "api_header": login_header,
+            "api_host": login_host,
+            "body_method": login_body_method,
+            "api_body": login_api_body,
+            "set": login_response_set,
+        },
+        project_id=project_id
     )
     # 返回
     return HttpResponse('success')
@@ -928,7 +934,11 @@ def project_login_send(request):
         # 把返回值传递给前端页面
         response.encoding = "utf-8"
         DB_host.objects.update_or_create(host=login_host)
-        res = response.json()
+        try:
+            res = response.json()
+        except:
+            end_res = {"response": response.text, "get_res": "只能提取json格式返回体"}
+            return HttpResponse(json.dumps(end_res), content_type='application/json')
 
         # 第三步，对返回值进行提取
         # 先判断是否是cookie持久化,若是,则不处理
