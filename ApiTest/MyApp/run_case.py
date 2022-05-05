@@ -20,6 +20,18 @@ from MyApp.views import global_datas_replace
 class Test(unittest.TestCase):
     '测试类'
 
+    @classmethod
+    def setUpClass(cls):
+        # print('收尾功能')
+        try:
+            for i in login_res_list:
+                if i['Case_id'] == cls.Case_id:
+                    # print('进行删除中～')
+                    login_res_list.remove(i)
+                    break
+        except:
+            pass
+
     def demo(self, step):
         time.sleep(3)
         # 项目id
@@ -75,14 +87,6 @@ class Test(unittest.TestCase):
                 for i in rlist_body:
                     api_body = api_body.replace("##" + i + "##", str(eval(i)))
 
-            ## 输出请求数据
-            print('【host】：', api_host)
-            print('【url】：', api_url)
-            print('【header】：', api_header)
-            print('【method】：', api_method)
-            print('【body_method】：', api_body_method)
-            print('【body】：', api_body)
-
             ## 实际发送请求
             # 处理host域名
             if api_host[:4] == '全局域名':
@@ -112,14 +116,25 @@ class Test(unittest.TestCase):
             # 登陆态代码：
             api_login = step.api_login  # 获取登陆开关
             if api_login == 'yes':  # 需要判断
+                Case_id = DB_step.objects.filter(id=step.id)[0].Case_id  # 先求出当前执行step所属的case_id
+                global login_res_list  # 新建一个登陆态列表
                 try:
-                    eval("login_res")
-                    print('已调用过')
+                    eval('login_res_list')
                 except:
-                    print('未调用过')
+                    login_res_list = []  # 判断是否存在，若不存在，则创建空的，一般只有平台重启后才会触发一次
+
+                # 去login_res_list中查找是否已经存在
+                for i in login_res_list:
+                    if i['Case_id'] == Case_id:  # 说明找到了.直接用。
+                        login_res = i
+                        break
+                else:  # 说明没找到，要创建
                     from MyApp.views import project_login_send_for_other
-                    global login_res
                     login_res = project_login_send_for_other(project_id)
+                    login_res['Case_id'] = Case_id  # 给它加入 大用例id 标记
+                    login_res_list.append(login_res)
+
+                # 运行到这的时候，可以肯定已经有了这个login res了
                 print(login_res)
                 # 开始插入代码url/header/body
                 ## url插入
@@ -137,6 +152,14 @@ class Test(unittest.TestCase):
                     header.update(login_res)
             else:
                 login_res = {}
+
+            ## 输出请求数据
+            print('【host】：', api_host)
+            print('【url】：', api_url)
+            print('【header】：', api_header)
+            print('【method】：', api_method)
+            print('【body_method】：', api_body_method)
+            print('【body】：', api_body)
 
             if api_body_method == 'none' or api_body_method == 'null':
                 if type(login_res) == dict:
@@ -272,7 +295,8 @@ def make_defself(step):
     return tool
 
 
-def make_def(steps):
+def make_def(steps, Case_id):
+    Test.Case_id = Case_id
     for fun in dir(Test):
         if 'test_' in fun:
             delattr(Test, fun)
@@ -282,6 +306,7 @@ def make_def(steps):
 
 def run(Case_id, Case_name, steps):
     # print(steps)
+    make_def(steps, Case_id)
     suit = unittest.makeSuite(Test)
     filename = 'MyApp/templates/Reports/%s.html' % Case_id
     with open(filename, 'wb') as fp:

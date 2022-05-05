@@ -115,9 +115,9 @@ top: 80px;right: 15%;background-color: black;color: white;border-radius: 2px">cl
 </script>
 
 
-<div style="background-color: #eefaff;min-height: 100px;width:-webkit-calc(100% - 340px);
+<div style="background: linear-gradient(to right,#d6faff,white,#ffe8e8);min-height: 100px;width:-webkit-calc(100% - 340px);
             margin-left: 342px;position: fixed;bottom: 0px;box-shadow: -4px -4px 8px #e3e3e3;padding: 10px">
-    <div style="width: 120px;height: 80px;background-color: #105f72;border-radius: 5px;color: white;padding: 3px;font-size: small">
+    <div style="width: 120px;height: 80px;background: linear-gradient(to right,#d6faff,white,#ffe8e8);border-radius: 5px;color: #1c8aa7;padding: 3px;font-size: small">
         当前项目数: <span>{{ count_project }}</span> <br>
         当前接口数: <span>{{ count_api }}</span> <br>
         当前用例数: <span>{{ count_case }}</span> <br>
@@ -263,7 +263,7 @@ top: 80px;right: 15%;background-color: black;color: white;border-radius: 2px">cl
 <div id="home_log_plan" style="padding-left: 20px;overflow-y: scroll;width: 320px;position: absolute;bottom: 10px">
     <br>
     {% for i in home_log %}
-        <div style="background-color: #eefaff;margin-bottom: 3px;border-radius: 5px;padding: 1px">
+        <div style="background: linear-gradient(to right,#d6faff,white,#ffe8e8);margin-bottom: 3px;border-radius: 5px;padding: 1px">
             <a href="/home_log/{{ i.id }}/" style=";text-decoration: none" class="log">
                 <span style="font-size: large;;color: black">{{ i.api_method }}</span>
                 {{ i.api_host }}{{ i.api_url }}
