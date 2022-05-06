@@ -155,6 +155,10 @@ color: white;padding-left: 10px">
             <option value="no" id="ts_encryption_no">无加密</option>
             <option value="yes" id="ts_encryption_yes">有加密</option>
         </select>
+        <select name="ts_cert" id="ts_cert" style="color: black;font-size: medium">
+            <option value="no" id="ts_cert_no">无证书</option>
+            <option value="yes" id="ts_cert_yes">加证书</option>
+        </select>
 
     </h4>
 
@@ -353,6 +357,7 @@ color: white;padding-left: 10px">
         document.getElementById('ts_header').value = '{}';
         document.getElementById('ts_login').value = 'no';
         document.getElementById('ts_encryption').value = 'no';
+        document.getElementById('ts_cert').value = 'no';
         // 开始初始化请求体编码格式部分:
         document.getElementById('click_none').click(); // 点击none子标签
         document.getElementById('mytbody').innerHTML = '<tr><td></td><td></td></tr>'
@@ -395,6 +400,9 @@ color: white;padding-left: 10px">
             }
             if (ret.sign != null && ret.sign != '') {
                 document.getElementById('ts_encryption').value = ret.sign;
+            }
+            if (ret.cert != null && ret.cert != '') {
+                document.getElementById('ts_cert').value = ret.cert;
             }
             // 公共请求头
             if (ret.public_header != null) {
@@ -492,6 +500,7 @@ color: white;padding-left: 10px">
         var ts_header = document.getElementById('ts_header').value;
         var ts_login = document.getElementById('ts_login').value;
         var ts_encryption = document.getElementById('ts_encryption').value;
+        var ts_cert = document.getElementById('ts_cert').value;
 
         {#alert(ts_method+ts_url+ts_host+ts_header)#}
 
@@ -595,6 +604,7 @@ color: white;padding-left: 10px">
             'ts_host': ts_host,
             'ts_login': ts_login,
             'ts_encryption': ts_encryption,
+            'ts_cert': ts_cert,
             'ts_header': ts_header,
             'ts_body_method': ts_body_method,
             'ts_api_body': ts_api_body,
@@ -613,6 +623,7 @@ color: white;padding-left: 10px">
         var ts_header = document.getElementById('ts_header').value;
         var ts_login = document.getElementById('ts_login').value;
         var ts_encryption = document.getElementById('ts_encryption').value;
+        var ts_cert = document.getElementById('ts_cert').value;
 
 
         var project_headers = document.getElementById('ts_project_header_li').children;
@@ -702,9 +713,11 @@ color: white;padding-left: 10px">
             ts_api_body = body_plan_G_Q + '*WQRF*' + body_plan_G_G;
         }
         var api_id = document.getElementById('ts_api_id').innerText; // 获取到接口的id
+        // 发送请求给后台
         $.get('/Api_send/', {
             'api_name': api_name,
             'ts_login': ts_login,
+            'ts_cert': ts_cert,
             'ts_encryption': ts_encryption,
             'api_id': api_id,
             'ts_method': ts_method,
@@ -1022,6 +1035,10 @@ padding-left: 10px;background-color: white">
             <option value="no" id="login_encryption_no">无加密</option>
             <option value="yes" id="login_encryption_yes">有加密</option>
         </select>
+        <select name="login_cert" id="login_cert" style="color: black;font-size: medium">
+            <option value="no" id="login_cert_no">无证书</option>
+            <option value="yes" id="login_cert_yes">加证书</option>
+        </select>
     </h4>
     <ul class="nav navbar-nav" style="width: 98%">
         <li>
@@ -1215,6 +1232,10 @@ token=/data/token"></textarea>
             if (ret.sign != null && ret.sign != '') {
                 document.getElementById('login_encryption').value = ret.sign;
             }
+            // 是否加证书
+            if (ret.cert != null && ret.cert != '') {
+                document.getElementById('login_cert').value = ret.cert;
+            }
             // 请求体编码格式
             var body_method = '#login_' + ret.body_method;
 
@@ -1284,6 +1305,7 @@ token=/data/token"></textarea>
         var login_header = document.getElementById('login_header').value;
         var login_response_set = document.getElementById('login_response_set').value;
         var login_encryption = document.getElementById('login_encryption').value;
+        var login_cert = document.getElementById('login_cert').value;
 
         // 判断顶部的数据是否填充完
         if (ts_method == 'none') {
@@ -1374,6 +1396,7 @@ token=/data/token"></textarea>
             'login_method': login_method,
             'login_url': login_url,
             'login_host': login_host,
+            'login_cert': login_cert,
             'login_encryption': login_encryption,
             'login_header': login_header,
             'login_body_method': login_body_method,
@@ -1392,6 +1415,7 @@ token=/data/token"></textarea>
         var login_header = document.getElementById('login_header').value;
         var login_response_set = document.getElementById('login_response_set').value;
         var login_encryption = document.getElementById('login_encryption').value;
+        var login_cert = document.getElementById('login_cert').value;
 
         // 判断顶部的数据是否填充完
         if (login_method == 'none') {
@@ -1480,6 +1504,7 @@ token=/data/token"></textarea>
             'login_method': login_method,
             'login_url': login_url,
             'login_host': login_host,
+            'login_cert': login_cert,
             'login_encryption': login_encryption,
             'login_header': login_header,
             'login_body_method': login_body_method,

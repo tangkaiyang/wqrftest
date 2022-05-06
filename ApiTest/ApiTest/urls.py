@@ -82,6 +82,7 @@ urlpatterns = [
     url(r'^global_data_save/$', global_data_save),  # 保存全局变量
     url(r'^global_data_change_check/$', global_data_change_check),  # 更改项目的生效变量组
     url(r'^encryption_save/$', encryption_save),  # 加密配置保存
+    url(r'^cert_upload/(?P<pid>.*)/$', cert_upload),  # 上传证书
 
     # ------------------小工具-----------------
     url(r'^tools_zhengjiao/$', zhengjiao),  # 进入小工具页面

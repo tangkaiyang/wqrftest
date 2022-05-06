@@ -28,6 +28,7 @@ class DB_project(models.Model):
     global_datas = models.CharField(max_length=100, null=True)  # 所生效的变量组的id列表
     encryption_insert = models.CharField(max_length=50, null=True)  # 加密算法插入位置
     encryption_input = models.CharField(max_length=500, null=True)  # 加密算法表达式
+    cert = models.CharField(max_length=200,null=True, default='') # 证书相关
 
     def __str__(self):
         return str(self.name)
@@ -40,6 +41,7 @@ class DB_apis(models.Model):
     api_url = models.CharField(max_length=1000, null=True)  # url
     api_header = models.CharField(max_length=1000, null=True)  # 请求头
     api_login = models.CharField(max_length=10, null=True)  # 是否带登录态
+    cert = models.CharField(max_length=10, null=True)  # 是否带证书
     api_host = models.CharField(max_length=100, null=True)  # 域名
     des = models.CharField(max_length=100, null=True)  # 描述
     body_method = models.CharField(max_length=20, null=True)  # 请求体编码格式
@@ -64,6 +66,7 @@ class DB_apis_log(models.Model):
     api_url = models.CharField(max_length=1000, null=True)  # url
     api_header = models.CharField(max_length=1000, null=True)  # 请求头
     api_login = models.CharField(max_length=10, null=True)  # 是否带登陆态
+    cert = models.CharField(max_length=10, null=True)  # 是否带证书
     api_host = models.CharField(max_length=100, null=True)  # 域名
 
     body_method = models.CharField(max_length=20, null=True)  # 请求体编码格式
@@ -102,6 +105,7 @@ class DB_step(models.Model):
     mock_res = models.CharField(max_length=1000, null=True)  # mock返回值
     public_header = models.CharField(max_length=1000, null=True)  # 全局变量-请求头
     api_login = models.CharField(max_length=10, null=True)  # 是否带登录态
+    cert = models.CharField(max_length=10, null=True) # 是否带证书
     sign = models.CharField(max_length=10, null=True, default='no')  # 是否验签
 
 
@@ -145,6 +149,7 @@ class DB_login(models.Model):
     body_method = models.CharField(max_length=20, null=True)  # 请求体编码格式
     api_body = models.CharField(max_length=1000, null=True)  # 请求体
     sign = models.CharField(max_length=10, null=True, default='no')  # 是否验签
+    cert = models.CharField(max_length=10, null=True, default='no')  # 是否带证书
     set = models.CharField(max_length=300, null=True)  # 提取设置
 
     def __str__(self):

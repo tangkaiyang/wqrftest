@@ -262,6 +262,7 @@ def Api_save(request):
     ts_body_method = request.GET['ts_body_method']
     # ts_api_body = request.GET['ts_api_body']
     ts_project_headers = request.GET['ts_project_headers']
+    ts_cert = request.GET['ts_cert']
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
         ts_body_method = api.last_body_method
@@ -274,6 +275,7 @@ def Api_save(request):
         api_method=ts_method,
         api_url=ts_url,
         api_login=ts_login,
+        cert=ts_cert,
         sign=ts_encryption,
         api_header=ts_header,
         api_host=ts_host,
@@ -293,7 +295,7 @@ def get_api_data(request):
 
 
 # 加密功能
-def encryption(url,body_method, body, project_id):
+def encryption(url, body_method, body, project_id):
     # 用project_id拿出加密插入位置和加密表达式
     project = DB_project.objects.filter(id=project_id)[0]
     encryption_insert = project.encryption_insert
@@ -326,25 +328,26 @@ def encryption(url,body_method, body, project_id):
     if encryption_insert == 'url':
         if '?' in url:
             if url[-1] == '&':
-                url += key+'='+eval(key)
+                url += key + '=' + eval(key)
             else:
-                url += '&'+key+"="+eval(key)
+                url += '&' + key + "=" + eval(key)
         else:
-            url+='?'+key+'='+eval(key)
+            url += '?' + key + '=' + eval(key)
     # 插入body
     elif encryption_insert == 'body':
-        if body_method not in ['form-data', 'x-www-form-urlencoded','Json']:
+        if body_method not in ['form-data', 'x-www-form-urlencoded', 'Json']:
             return url, body
         ## 解析body
         body = eval(body)
         ## 判断类型
-        if type(body) == list: # 二维数组
-            body.append([key,eval(key)])
+        if type(body) == list:  # 二维数组
+            body.append([key, eval(key)])
             body = str(body)
-        elif type(body) == dict: # 字典
+        elif type(body) == dict:  # 字典
             body[key] = eval(key)
             body = json.dumps(body)
     return url, body
+
 
 # 调试层发送请求
 def Api_send(request):
@@ -357,9 +360,8 @@ def Api_send(request):
     print(ts_url)
     ts_host = request.GET['ts_host']
     ts_header = request.GET['ts_header']
-    ts_api_body = request.GET['ts_api_body']
-    ts_encryption = request.GET['ts_encryption']
     api_name = request.GET['api_name']
+    ts_cert = request.GET['ts_cert']
     ts_body_method = request.GET['ts_body_method']
     ts_project_headers = request.GET['ts_project_headers'].split(',')
     ts_login = request.GET['ts_login']
@@ -383,7 +385,6 @@ def Api_send(request):
         ts_api_body = global_datas_replace(project_id, ts_api_body)
         api = DB_apis.objects.filter(id=api_id)
         api.update(last_body_method=ts_body_method, last_api_body=ts_api_body)
-
 
     # 发送请求获取返回值
     if ts_header == '':
@@ -418,17 +419,21 @@ def Api_send(request):
     # 进行加密策略
     ts_encryption = request.GET['ts_encryption']
     if ts_encryption == 'yes':
-        ts_url, ts_api_body = encryption(ts_url,ts_body_method, ts_api_body, project_id)
+        ts_url, ts_api_body = encryption(ts_url, ts_body_method, ts_api_body, project_id)
     ## header插入
     if type(login_res) == dict:
         header.update(login_res)
 
     try:
+        if ts_cert == 'yes':
+            cert_name = 'MyApp/static/Certs/%s' % DB_project.objects.filter(id=project_id)[0].cert
+        else:
+            cert_name = ''
         if ts_body_method == 'none':
             if type(login_res) == dict:
-                response = requests.request(ts_method.upper(), url, headers=header, data={})
+                response = requests.request(ts_method.upper(), url, headers=header, data={}, cert=cert_name)
             else:
-                response = login_res.request(ts_method.upper(), url, headers=header, data={})
+                response = login_res.request(ts_method.upper(), url, headers=header, data={}, cert=cert_name)
         elif ts_body_method == 'form-data':
             files = []
             payload = ()
@@ -437,9 +442,9 @@ def Api_send(request):
             if type(login_res) == dict:
                 for i in login_res.keys():
                     payload += ((i, login_res[i]),)
-                response = requests.request(ts_method.upper(), url, headers=header, data=payload, files=files)
+                response = requests.request(ts_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
             else:
-                response = login_res.request(ts_method.upper(), url, headers=header, data=payload, files=files)
+                response = login_res.request(ts_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
 
         elif ts_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -449,9 +454,9 @@ def Api_send(request):
             if type(login_res) == dict:
                 for i in login_res.keys():
                     payload += ((i, login_res[i]),)
-                response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+                response = requests.request(ts_method.upper(), url, headers=header, data=payload, cert=cert_name)
             else:
-                response = login_res.request(ts_method.upper(), url, headers=header, data=payload)
+                response = login_res.request(ts_method.upper(), url, headers=header, data=payload, cert=cert_name)
 
         elif ts_body_method == 'GraphQL':
             header['Content-Type'] = 'application/json'
@@ -463,9 +468,9 @@ def Api_send(request):
                 graphql = '{}'
             payload = '{"query": "%s", "variables": %s}' % {query, graphql}
             if type(login_res) == dict:
-                response = requests.request(ts_method.upper(), url, headers=header, data=payload)
+                response = requests.request(ts_method.upper(), url, headers=header, data=payload, cert=cert_name)
             else:
-                response = login_res.request(ts_method.upper(), url, headers=header, data=payload)
+                response = login_res.request(ts_method.upper(), url, headers=header, data=payload, cert=cert_name)
         else:
             if ts_body_method == 'Text':
                 header['Content-Type'] = 'text/plain'
@@ -482,9 +487,9 @@ def Api_send(request):
             if ts_body_method == 'Xml':
                 header['Content-Type'] = 'text/plain'
             if type(login_res) == dict:
-                response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+                response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'), cert=cert_name)
             else:
-                response = login_res.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'))
+                response = login_res.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'), cert=cert_name)
 
         # 设置返回编码
         response.encoding = 'utf-8'
@@ -513,6 +518,7 @@ def copy_api(request):
         api_body=old_api.api_body,
         result=old_api.result,
         sign=old_api.sign,
+        cert=old_api.cert,
         file_key=old_api.file_key,
         file_name=old_api.file_name,
         public_header=old_api.public_header,
@@ -533,6 +539,7 @@ def error_request(request):
     host = api.api_host
     header = api.api_header
     body_method = api.body_method
+    cert = api.cert
     if header == '':
         header = {}
     try:
@@ -546,21 +553,26 @@ def error_request(request):
     else:
         url = host + url
     try:
+        project_id = api.project_id
+        if cert == 'yes':
+            cert_name = 'MyApp/static/Certs/%s' % DB_project.objects.filter(id=project_id)[0].cert
+        else:
+            cert_name = ''
         if body_method == 'form-data':
             files = []
             payload = ()
             for i in eval(new_body):
                 payload += ((i[0], i[1]),)
-            response = requests.request(method.upper(), url, headers=header, data=payload, files=files)
+            response = requests.request(method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
         elif body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
             payload = ()
             for i in eval(new_body):
                 payload += ((i[0], i[1]),)
-            response = requests.request(method.upper(), url, headers=header, data=payload)
+            response = requests.request(method.upper(), url, headers=header, data=payload, cert=cert_name)
         elif body_method == 'Json':
             header['Content-Type'] = 'text/plain'
-            response = requests.request(method.upper(), url, headers=header, data=new_body.encode('utf-8'))
+            response = requests.request(method.upper(), url, headers=header, data=new_body.encode('utf-8'), cert=cert_name)
         else:
             return HttpResponse('非法的请求体类型')
         # 把返回值传递给前端页面
@@ -771,10 +783,12 @@ def save_step(request):
     assert_path = request.GET['assert_path']
     step_login = request.GET['step_login']
     step_encryption = request.GET['step_encryption']
+    step_cert = request.GET['step_cert']
 
     DB_step.objects.filter(id=step_id).update(name=name,
                                               index=index,
                                               sign=step_encryption,
+                                              cert=step_cert,
                                               api_method=step_method,
                                               api_url=step_url,
                                               api_host=step_host,
@@ -903,6 +917,7 @@ def project_login_save(request):
     login_api_body = request.GET['login_api_body']
     login_response_set = request.GET['login_response_set']
     login_encryption = request.GET['login_encryption']
+    login_cert = request.GET['login_cert']
     # 保存数据
     DB_login.objects.update_or_create(
         defaults={
@@ -913,6 +928,7 @@ def project_login_save(request):
             "body_method": login_body_method,
             "api_body": login_api_body,
             "set": login_response_set,
+            "cert": login_cert,
         },
         project_id=project_id
     )
@@ -935,7 +951,7 @@ def project_login_send(request):
     login_api_body = request.GET['login_api_body']
     login_api_body = global_datas_replace(project_id, login_api_body)  # 替换全局变量
     login_response_set = request.GET['login_response_set']
-    login_encryption = request.GET['login_encryption']
+    login_cert = request.GET['login_cert']
     if login_header == '':
         login_header = {}
 
@@ -955,23 +971,27 @@ def project_login_send(request):
     # 进行加密策略
     login_encryption = request.GET['login_encryption']
     if login_encryption == 'yes':
-        url, login_api_body = encryption(url,login_body_method, login_api_body, project_id)
+        url, login_api_body = encryption(url, login_body_method, login_api_body, project_id)
     try:
+        if login_cert == 'yes':
+            cert_name = 'MyApp/static/Certs/%s' % DB_project.objects.filter(id=project_id)[0].cert
+        else:
+            cert_name = ''
         if login_body_method == 'none':
-            response = requests.request(login_method.upper(), url, headers=header, data={})
+            response = requests.request(login_method.upper(), url, headers=header, data={}, cert=cert_name)
         elif login_body_method == 'form-data':
             files = []
             payload = ()
             for i in eval(login_api_body):
                 payload += ((i[0], i[1]),)
-            response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files)
+            response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
 
         elif login_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
             payload = ()
             for i in eval(login_api_body):
                 payload += ((i[0], i[1]),)
-            response = requests.request(login_method.upper(), url, headers=header, data=payload)
+            response = requests.request(login_method.upper(), url, headers=header, data=payload, cert=cert_name)
 
         elif login_body_method == 'GraphQL':
             header['Content-Type'] = 'application/json'
@@ -982,7 +1002,7 @@ def project_login_send(request):
             except:
                 graphql = '{}'
             payload = '(("query","%s"),("variables",%s))' % (query, graphql)
-            response = requests.request(login_method.upper(), url, headers=header, data=payload)
+            response = requests.request(login_method.upper(), url, headers=header, data=payload, cert=cert_name)
 
 
         else:  # 这时肯定是raw的五个子选项：
@@ -1000,7 +1020,7 @@ def project_login_send(request):
 
             if login_body_method == 'Xml':
                 header['Content-Type'] = 'text/plain'
-            response = requests.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'))
+            response = requests.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'), cert=cert_name)
 
         # 把返回值传递给前端页面
         response.encoding = "utf-8"
@@ -1052,7 +1072,7 @@ def project_login_send_for_other(project_id):
     login_api_body = login_api.api_body
     login_api_body = global_datas_replace(project_id, login_api_body)  # 替换全局变量
     login_response_set = login_api.set
-    login_encryption = login_api.sign
+    login_cert = login_api.cert
     if login_header == '':
         login_header = {}
     # 第二步，发送请求
@@ -1071,16 +1091,20 @@ def project_login_send_for_other(project_id):
     # 进行加密策略
     login_encryption = login_api.sign
     if login_encryption == 'yes':
-        url, login_api_body = encryption(url,login_body_method, login_api_body, project_id)
+        url, login_api_body = encryption(url, login_body_method, login_api_body, project_id)
     try:
+        if login_cert == 'yes':
+            cert_name = 'MyApp/static/Certs/%s' % DB_project.objects.filter(id=project_id)[0].cert
+        else:
+            cert_name = ''
         if login_body_method == 'none':
             # 先判断是否是cookie持久化,若是,则不处理
             if login_response_set == 'cookie':
                 a = requests.session()
-                a.request(login_method.upper(), url, headers=header, data={})
+                a.request(login_method.upper(), url, headers=header, data={}, cert=cert_name)
                 return a
             else:
-                response = requests.request(login_method.upper(), url, headers=header, data={})
+                response = requests.request(login_method.upper(), url, headers=header, data={}, cert=cert_name)
         elif login_body_method == 'form-data':
             files = []
             payload = ()
@@ -1089,10 +1113,10 @@ def project_login_send_for_other(project_id):
             # 先判断是否是cookie持久化,若是,则不处理
             if login_response_set == 'cookie':
                 a = requests.session()
-                a.request(login_method.upper(), url, headers=header, data=payload, files=files)
+                a.request(login_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
                 return a
             else:
-                response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files)
+                response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
 
         elif login_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -1102,9 +1126,9 @@ def project_login_send_for_other(project_id):
             # 先判断是否是cookie持久化,若是,则不处理
             if login_response_set == 'cookie':
                 a = requests.session()
-                a.request(login_method.upper(), url, headers=header, data=payload)
+                a.request(login_method.upper(), url, headers=header, data=payload, cert=cert_name)
                 return a
-            response = requests.request(login_method.upper(), url, headers=header, data=payload)
+            response = requests.request(login_method.upper(), url, headers=header, data=payload, cert=cert_name)
 
         elif login_body_method == 'GraphQL':
             header['Content-Type'] = 'application/json'
@@ -1118,10 +1142,10 @@ def project_login_send_for_other(project_id):
             # 先判断是否是cookie持久化,若是,则不处理
             if login_response_set == 'cookie':
                 a = requests.session()
-                a.request(login_method.upper(), url, headers=header, data=payload)
+                a.request(login_method.upper(), url, headers=header, data=payload, cert=cert_name)
                 return a
             else:
-                response = requests.request(login_method.upper(), url, headers=header, data=payload)
+                response = requests.request(login_method.upper(), url, headers=header, data=payload, cert=cert_name)
 
         else:  # 这时肯定是raw的五个子选项：
             if login_body_method == 'Text':
@@ -1141,11 +1165,11 @@ def project_login_send_for_other(project_id):
             # 先判断是否是cookie持久化,若是,则不处理
             if login_response_set == 'cookie':
                 a = requests.session()
-                a.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'))
+                a.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'), cert=cert_name)
                 return a
             else:
                 response = requests.request(login_method.upper(), url, headers=header,
-                                            data=login_api_body.encode('utf-8'))
+                                            data=login_api_body.encode('utf-8'), cert=cert_name)
         # 把返回值传递给前端页面
         response.encoding = "utf-8"
         DB_host.objects.update_or_create(host=login_host)
@@ -1259,3 +1283,17 @@ def encryption_save(request):
     DB_project.objects.filter(id=project_id).update(encryption_insert=encryption_insert,
                                                     encryption_input=encryption_input)
     return HttpResponse('')
+
+
+# 上传证书
+def cert_upload(request, pid):
+    file = request.FILES.get("fileUpload", None)  # 靠name获取上传的文件,如果没有,避免报错,设置成None
+    if not file:
+        return HttpResponseRedirect('/project_set/%s/' % pid)  # 如果没有则返回
+    new_name = 'CERT_' + pid + '_' + str(file)  # 设置好这个证书的名字
+    with open("MyApp/static/Certs/" + new_name, 'wb+') as destination:
+        for chunk in file.chunks():  # 分块写入文件
+            destination.write(chunk)
+    # 去修改这个关联id
+    DB_project.objects.filter(id=pid).update(cert=new_name)
+    return HttpResponseRedirect('/project_set/%s/' % pid)  # 正常返回

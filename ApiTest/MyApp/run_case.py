@@ -40,6 +40,10 @@ class Test(unittest.TestCase):
         api_method = step.api_method
         api_url = step.api_url
         api_url = global_datas_replace(project_id, api_url)
+
+        # 取出证书开关
+        api_cert = step.cert
+
         api_host = step.api_host
         api_host = global_datas_replace(project_id, api_host)
         api_header = step.api_header
@@ -155,7 +159,7 @@ class Test(unittest.TestCase):
             # 进行加密策略
             step_encryption = step.sign
             if step_encryption == 'yes':
-                url, api_body = encryption(url,api_body_method, api_body, project_id)
+                url, api_body = encryption(url, api_body_method, api_body, project_id)
             ## 输出请求数据
             print('【host】：', api_host)
             print('【url】：', api_url)
@@ -164,11 +168,17 @@ class Test(unittest.TestCase):
             print('【body_method】：', api_body_method)
             print('【body】：', api_body)
 
+            ## 判断证书
+            if api_cert == 'yes':
+                cert_name = 'MyApp/static/Certs/%s' % DB_project.objects.filter(id=project_id)[0].cert
+            else:
+                cert_name = ''
+
             if api_body_method == 'none' or api_body_method == 'null':
                 if type(login_res) == dict:
-                    response = requests.request(api_method.upper(), url, headers=header, data={})
+                    response = requests.request(api_method.upper(), url, headers=header, data={}, cert=cert_name)
                 else:
-                    response = login_res.request(api_method.upper(), url, headers=header, data={})
+                    response = login_res.request(api_method.upper(), url, headers=header, data={}, cert=cert_name)
 
             elif api_body_method == 'form-data':
                 files = []
@@ -178,9 +188,11 @@ class Test(unittest.TestCase):
                 if type(login_res) == dict:
                     for i in login_res.keys():
                         payload += ((i, login_res[i]),)
-                    response = requests.request(api_method.upper(), url, headers=header, data=payload, files=files)
+                    response = requests.request(api_method.upper(), url, headers=header, data=payload, files=files,
+                                                cert=cert_name)
                 else:
-                    response = login_res.request(api_method.upper(), url, headers=header, data=payload, files=files)
+                    response = login_res.request(api_method.upper(), url, headers=header, data=payload, files=files,
+                                                 cert=cert_name)
 
             elif api_body_method == 'x-www-form-urlencoded':
                 header['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -190,9 +202,9 @@ class Test(unittest.TestCase):
                 if type(login_res) == dict:
                     for i in login_res.keys():
                         payload += ((i, login_res[i]),)
-                    response = requests.request(api_method.upper(), url, headers=header, data=payload)
+                    response = requests.request(api_method.upper(), url, headers=header, data=payload, cert=cert_name)
                 else:
-                    response = login_res.request(api_method.upper(), url, headers=header, data=payload)
+                    response = login_res.request(api_method.upper(), url, headers=header, data=payload, cert=cert_name)
             elif api_body_method == 'GraphQL':
                 header['Content-Type'] = 'application/json'
                 query = api_body_method.split('*WQRF*')[0]
@@ -203,9 +215,9 @@ class Test(unittest.TestCase):
                     graphql = '{}'
                 payload = '(("query","%s"),("variables",%s))' % {query, graphql}
                 if type(login_res) == dict:
-                    response = requests.request(api_method.upper(), url, headers=header, data=payload)
+                    response = requests.request(api_method.upper(), url, headers=header, data=payload, cert=cert_name)
                 else:
-                    response = login_res.request(api_method.upper(), url, headers=header, data=payload)
+                    response = login_res.request(api_method.upper(), url, headers=header, data=payload, cert=cert_name)
 
             else:  # 这时肯定是raw的五个子选项：
                 if api_body_method == 'Text':
@@ -227,9 +239,11 @@ class Test(unittest.TestCase):
                 if api_body_method == 'Xml':
                     header['Content-Type'] = 'text/plain'
                 if type(login_res) == dict:
-                    response = requests.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
+                    response = requests.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'),
+                                                cert=cert_name)
                 else:
-                    response = login_res.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'))
+                    response = login_res.request(api_method.upper(), url, headers=header, data=api_body.encode('utf-8'),
+                                                 cert=cert_name)
             response.encoding = "utf-8"
             res = response.text
             DB_host.objects.update_or_create(host=api_host)
