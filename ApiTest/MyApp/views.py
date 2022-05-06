@@ -1,4 +1,5 @@
 import json
+import time
 
 import requests
 from django.contrib.auth.decorators import login_required
@@ -256,6 +257,7 @@ def Api_save(request):
     ts_url = request.GET['ts_url']
     ts_host = request.GET['ts_host']
     ts_login = request.GET['ts_login']
+    ts_encryption = request.GET['ts_encryption']
     ts_header = request.GET['ts_header']
     ts_body_method = request.GET['ts_body_method']
     # ts_api_body = request.GET['ts_api_body']
@@ -272,6 +274,7 @@ def Api_save(request):
         api_method=ts_method,
         api_url=ts_url,
         api_login=ts_login,
+        sign=ts_encryption,
         api_header=ts_header,
         api_host=ts_host,
         body_method=ts_body_method,
@@ -289,6 +292,60 @@ def get_api_data(request):
     return HttpResponse(json.dumps(api), content_type="application/json")
 
 
+# 加密功能
+def encryption(url,body_method, body, project_id):
+    # 用project_id拿出加密插入位置和加密表达式
+    project = DB_project.objects.filter(id=project_id)[0]
+    encryption_insert = project.encryption_insert
+    encryption_input = project.encryption_input
+    # 根据表达式从url和body中拿出需要用到的参数
+    key = encryption_input.split('=')[0].rstrip()  # 拿到这个加密字段名称
+    pars = re.findall(r'#(.*?)#', encryption_input)  # 拿到所有需要去替换的字段
+
+    for p in pars:
+        # 从url中取
+        tmp = re.findall(r'%s=(.*?)$|&' % p, url)
+        if tmp:
+            encryption_input = encryption_input.replace('#%s#' % p, tmp[0])
+            continue
+        # body中取,这里要判断下body的格式
+        tmp = re.findall(r'"%s",(.*?)]' % p, body)
+        if tmp:
+            encryption_input = encryption_input.replace('#%s#' % p, tmp[0])
+            continue
+        tmp = re.findall(r'"%s":(.*?)}' % p, body)
+        if tmp:
+            encryption_input = encryption_input.replace('#%s#' % p, str(eval(tmp[0])))
+            continue
+        # 解析预置字段
+        if p == 'time':
+            encryption_input = encryption_input.replace('#%s#' % p, str(time.time())[:10])
+    # 进行求值
+    exec(encryption_input)
+    # 插入url
+    if encryption_insert == 'url':
+        if '?' in url:
+            if url[-1] == '&':
+                url += key+'='+eval(key)
+            else:
+                url += '&'+key+"="+eval(key)
+        else:
+            url+='?'+key+'='+eval(key)
+    # 插入body
+    elif encryption_insert == 'body':
+        if body_method not in ['form-data', 'x-www-form-urlencoded','Json']:
+            return url, body
+        ## 解析body
+        body = eval(body)
+        ## 判断类型
+        if type(body) == list: # 二维数组
+            body.append([key,eval(key)])
+            body = str(body)
+        elif type(body) == dict: # 字典
+            body[key] = eval(key)
+            body = json.dumps(body)
+    return url, body
+
 # 调试层发送请求
 def Api_send(request):
     # 提取所有数据
@@ -301,6 +358,7 @@ def Api_send(request):
     ts_host = request.GET['ts_host']
     ts_header = request.GET['ts_header']
     ts_api_body = request.GET['ts_api_body']
+    ts_encryption = request.GET['ts_encryption']
     api_name = request.GET['api_name']
     ts_body_method = request.GET['ts_body_method']
     ts_project_headers = request.GET['ts_project_headers'].split(',')
@@ -325,6 +383,7 @@ def Api_send(request):
         ts_api_body = global_datas_replace(project_id, ts_api_body)
         api = DB_apis.objects.filter(id=api_id)
         api.update(last_body_method=ts_body_method, last_api_body=ts_api_body)
+
 
     # 发送请求获取返回值
     if ts_header == '':
@@ -356,6 +415,10 @@ def Api_send(request):
         if type(login_res) == dict:
             for i in login_res.keys():
                 url += '&' + i + '=' + login_res[i]
+    # 进行加密策略
+    ts_encryption = request.GET['ts_encryption']
+    if ts_encryption == 'yes':
+        ts_url, ts_api_body = encryption(ts_url,ts_body_method, ts_api_body, project_id)
     ## header插入
     if type(login_res) == dict:
         header.update(login_res)
@@ -707,9 +770,11 @@ def save_step(request):
     assert_qz = request.GET['assert_qz']
     assert_path = request.GET['assert_path']
     step_login = request.GET['step_login']
+    step_encryption = request.GET['step_encryption']
 
     DB_step.objects.filter(id=step_id).update(name=name,
                                               index=index,
+                                              sign=step_encryption,
                                               api_method=step_method,
                                               api_url=step_url,
                                               api_host=step_host,
@@ -837,6 +902,7 @@ def project_login_save(request):
     login_body_method = request.GET['login_body_method']
     login_api_body = request.GET['login_api_body']
     login_response_set = request.GET['login_response_set']
+    login_encryption = request.GET['login_encryption']
     # 保存数据
     DB_login.objects.update_or_create(
         defaults={
@@ -869,6 +935,7 @@ def project_login_send(request):
     login_api_body = request.GET['login_api_body']
     login_api_body = global_datas_replace(project_id, login_api_body)  # 替换全局变量
     login_response_set = request.GET['login_response_set']
+    login_encryption = request.GET['login_encryption']
     if login_header == '':
         login_header = {}
 
@@ -885,6 +952,10 @@ def project_login_send(request):
         url = login_host + '/' + login_url
     else:  # 肯定有一个有/
         url = login_host + login_url
+    # 进行加密策略
+    login_encryption = request.GET['login_encryption']
+    if login_encryption == 'yes':
+        url, login_api_body = encryption(url,login_body_method, login_api_body, project_id)
     try:
         if login_body_method == 'none':
             response = requests.request(login_method.upper(), url, headers=header, data={})
@@ -981,6 +1052,7 @@ def project_login_send_for_other(project_id):
     login_api_body = login_api.api_body
     login_api_body = global_datas_replace(project_id, login_api_body)  # 替换全局变量
     login_response_set = login_api.set
+    login_encryption = login_api.sign
     if login_header == '':
         login_header = {}
     # 第二步，发送请求
@@ -996,6 +1068,10 @@ def project_login_send_for_other(project_id):
         url = login_host + '/' + login_url
     else:  # 肯定有一个有/
         url = login_host + login_url
+    # 进行加密策略
+    login_encryption = login_api.sign
+    if login_encryption == 'yes':
+        url, login_api_body = encryption(url,login_body_method, login_api_body, project_id)
     try:
         if login_body_method == 'none':
             # 先判断是否是cookie持久化,若是,则不处理
@@ -1172,4 +1248,14 @@ def global_data_change_check(request):
     project_id = request.GET['project_id']
     global_datas = request.GET['global_datas']
     DB_project.objects.filter(id=project_id).update(global_datas=global_datas)
+    return HttpResponse('')
+
+
+# 加密配置保存
+def encryption_save(request):
+    project_id = request.GET['project_id']
+    encryption_insert = request.GET['encryption_insert']
+    encryption_input = request.GET['encryption_input']
+    DB_project.objects.filter(id=project_id).update(encryption_insert=encryption_insert,
+                                                    encryption_input=encryption_input)
     return HttpResponse('')

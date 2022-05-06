@@ -14,7 +14,7 @@ sys.path.append(path)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ApiTest.settings")
 django.setup()
 from MyApp.models import *
-from MyApp.views import global_datas_replace
+from MyApp.views import global_datas_replace, encryption
 
 
 class Test(unittest.TestCase):
@@ -152,7 +152,10 @@ class Test(unittest.TestCase):
                     header.update(login_res)
             else:
                 login_res = {}
-
+            # 进行加密策略
+            step_encryption = step.sign
+            if step_encryption == 'yes':
+                url, api_body = encryption(url,api_body_method, api_body, project_id)
             ## 输出请求数据
             print('【host】：', api_host)
             print('【url】：', api_url)

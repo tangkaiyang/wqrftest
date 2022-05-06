@@ -235,7 +235,7 @@
                 <option value="delete">DELETE</option>
             </select>
         </li>
-        <li style="width: -webkit-calc(100% - 225px)">
+        <li style="width: -webkit-calc(100% - 306px)">
             <input id="step_url" style="border-radius: 4px;border: 1px solid #cccccc;
 padding-left: 10px;width: 100%;height: 35px;" type="text" placeholder="url: 如 /abcd/efgh/" value="">
         </li>
@@ -243,6 +243,10 @@ padding-left: 10px;width: 100%;height: 35px;" type="text" placeholder="url: 如 
             <select name="step_login" id="step_login" style="height: 35px" class="form-control">
                 <option value="no" id="step_login_no">不加登录态</option>
                 <option value="yes" id="step_login_yes">加登录态</option>
+            </select>
+            <select name="step_encryption" id="step_encryption" style="height: 35px" class="form-control">
+                <option value="no" id="step_encryption_no">无加密</option>
+                <option value="yes" id="step_encryption_yes">有加密</option>
             </select>
         </li>
     </ul>
@@ -579,6 +583,9 @@ code:200"></textarea>
             if (ret.api_login != null && ret.api_login != '') {
                 document.getElementById('step_login').value = ret.api_login;
             }
+            if (ret.sign != null && ret.sign != '') {
+                document.getElementById('step_encryption').value = ret.sign;
+            }
             // 请求体编码格式
             var body_method = '#' + ret.api_body_method;
             $("li a[href=" + body_method + "]").click();
@@ -654,6 +661,7 @@ code:200"></textarea>
             var index = document.getElementById('step_index').value;
             var mock_res = document.getElementById('mock_res').value;
             var step_login = document.getElementById('step_login').value;
+            var step_encryption = document.getElementById('step_encryption').value;
 
 
             //公共请求头
@@ -743,6 +751,7 @@ code:200"></textarea>
                 'step_id': step_id,
                 'name': name,
                 'index': index,
+                'step_encryption': step_encryption,
                 'step_method': step_method,
                 'step_url': step_url,
                 'step_host': step_host,
@@ -782,6 +791,7 @@ code:200"></textarea>
         document.getElementById('step_header').value = '{}';
         document.getElementById('mock_res').value = '';
         document.getElementById('step_login').value = 'no';
+        document.getElementById('step_encryption').value = 'no';
         var project_headers = document.getElementById('ts_project_header_li').children;
         for (var i = 0; i < project_headers.length; i++) {
             project_headers[i].children[0].checked = false;
