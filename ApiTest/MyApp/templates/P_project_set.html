@@ -31,21 +31,29 @@
     <h3>项目描述</h3>
     <textarea name="" id="remark" placeholder="最大500字" style="width: 70%" rows="4">{{ project.remark }}</textarea> <br>
     <h3>其他管理员</h3>
-    <textarea name="" id="other_user" placeholder="多个成员之间用英文逗号,来隔开" style="width: 70%" rows="4">{{ project.other_user }}</textarea>
+    <textarea name="" id="other_user" placeholder="多个成员之间用英文逗号,来隔开" style="width: 70%"
+              rows="4">{{ project.other_user }}</textarea>
+    <h3>上传client证书</h3>
+    <form style="" id="upload_file" action="/cert_upload/{{ project.id }}/" method="post" enctype="multipart/form-data">
+        <input type="file" name="fileUpload" style="width: 20%;margin-left: 40%;border:1px solid #fcbfbf;"/>
+        <br>
+        <button type="submit" style="width: 20%;" class="btn"> 上传证书</button>
+    </form>
 </div>
 
 <br><br>
-<button type="button" style="margin-left: 15%;width: 70%" class="btn btn-primary btn-lg btn-block" onclick="save()">保存</button>
+<button type="button" style="margin-left: 15%;width: 70%" class="btn btn-primary btn-lg btn-block" onclick="save()">保存
+</button>
 <script>
     function save() {
         let name = document.getElementById('name').value;
         let remark = document.getElementById('remark').value;
         let other_user = document.getElementById('other_user').value;
-        $.get('/save_project_set/'+'{{ project.id }}'+'/',{
+        $.get('/save_project_set/' + '{{ project.id }}' + '/', {
             'name': name,
             'remark': remark,
             'other_user': other_user,
-        },function (ret) {
+        }, function (ret) {
             alert('保存成功')
         })
     }
