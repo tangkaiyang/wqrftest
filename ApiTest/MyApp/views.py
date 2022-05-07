@@ -1,4 +1,5 @@
 import json
+import threading
 import time
 
 import requests
@@ -442,9 +443,11 @@ def Api_send(request):
             if type(login_res) == dict:
                 for i in login_res.keys():
                     payload += ((i, login_res[i]),)
-                response = requests.request(ts_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
+                response = requests.request(ts_method.upper(), url, headers=header, data=payload, files=files,
+                                            cert=cert_name)
             else:
-                response = login_res.request(ts_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
+                response = login_res.request(ts_method.upper(), url, headers=header, data=payload, files=files,
+                                             cert=cert_name)
 
         elif ts_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -487,9 +490,11 @@ def Api_send(request):
             if ts_body_method == 'Xml':
                 header['Content-Type'] = 'text/plain'
             if type(login_res) == dict:
-                response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'), cert=cert_name)
+                response = requests.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'),
+                                            cert=cert_name)
             else:
-                response = login_res.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'), cert=cert_name)
+                response = login_res.request(ts_method.upper(), url, headers=header, data=ts_api_body.encode('utf-8'),
+                                             cert=cert_name)
 
         # 设置返回编码
         response.encoding = 'utf-8'
@@ -572,7 +577,8 @@ def error_request(request):
             response = requests.request(method.upper(), url, headers=header, data=payload, cert=cert_name)
         elif body_method == 'Json':
             header['Content-Type'] = 'text/plain'
-            response = requests.request(method.upper(), url, headers=header, data=new_body.encode('utf-8'), cert=cert_name)
+            response = requests.request(method.upper(), url, headers=header, data=new_body.encode('utf-8'),
+                                        cert=cert_name)
         else:
             return HttpResponse('非法的请求体类型')
         # 把返回值传递给前端页面
@@ -984,7 +990,8 @@ def project_login_send(request):
             payload = ()
             for i in eval(login_api_body):
                 payload += ((i[0], i[1]),)
-            response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
+            response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files,
+                                        cert=cert_name)
 
         elif login_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -1020,7 +1027,8 @@ def project_login_send(request):
 
             if login_body_method == 'Xml':
                 header['Content-Type'] = 'text/plain'
-            response = requests.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'), cert=cert_name)
+            response = requests.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'),
+                                        cert=cert_name)
 
         # 把返回值传递给前端页面
         response.encoding = "utf-8"
@@ -1116,7 +1124,8 @@ def project_login_send_for_other(project_id):
                 a.request(login_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
                 return a
             else:
-                response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files, cert=cert_name)
+                response = requests.request(login_method.upper(), url, headers=header, data=payload, files=files,
+                                            cert=cert_name)
 
         elif login_body_method == 'x-www-form-urlencoded':
             header['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -1165,7 +1174,8 @@ def project_login_send_for_other(project_id):
             # 先判断是否是cookie持久化,若是,则不处理
             if login_response_set == 'cookie':
                 a = requests.session()
-                a.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'), cert=cert_name)
+                a.request(login_method.upper(), url, headers=header, data=login_api_body.encode('utf-8'),
+                          cert=cert_name)
                 return a
             else:
                 response = requests.request(login_method.upper(), url, headers=header,
@@ -1297,3 +1307,37 @@ def cert_upload(request, pid):
     # 去修改这个关联id
     DB_project.objects.filter(id=pid).update(cert=new_name)
     return HttpResponseRedirect('/project_set/%s/' % pid)  # 正常返回
+
+
+# 保存用例并发设置
+def save_case_concurrent(request):
+    id = request.GET['id']
+    concurrent = request.GET['concurrent']
+    DB_cases.objects.filter(id=id).update(concurrent=eval(concurrent))
+    return HttpResponse('')
+
+
+# 并发用例
+def concurrent_cases(request, pid):
+    # 找出所有的并发用例id
+    case_ids = list(DB_cases.objects.filter(project_id=pid, concurrent=True).values('id'))
+
+    # 遍历所有并发用例,新建线程并执行
+    def do_case(case_id):
+        print('启动用例: ', case_id)
+        requests.get('http:///127.0.0.1:8000/Run_Case?Case_id=%s' % case_id)
+        print('执行完毕: ', case_id)
+
+    ts = []  # 空线程池
+    for case_id in case_ids:
+        t = threading.Thread(target=do_case, args=(case_id["id"],))  # 组装成子线程
+        t.setDaemon(True)  # 设置守护线程
+        ts.append(t)
+    for t in ts:  # 启动线程组
+        t.start()
+    for t in ts:
+        t.join()
+    print('全部执行完毕')
+
+    # 返回
+    return HttpResponse('')

@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>接口测试平台测试报告: 新项目</title>
+    <title>接口测试平台测试报告:  组织id&amp;serviceId互查</title>
     <meta name="generator" content="HTMLTestRunner 0.8.2"/>
     <link rel="shortcut icon" href=" /static/images/favicon.ico" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -236,9 +236,9 @@ function showOutput(id, name) {
     <div style="border: 1px solid #ffffff;border-radius: 10px;box-shadow: 2px 2px 12px #aeaeae;padding-left: 30px;width: 500px">
 <p class='attribute'>接口自动化测试平台提供</p>
 <p class='attribute'><strong>注意:</strong> 出现问题请联系管理员！</p>
-<p class='attribute'><strong>报告生成日期:</strong> 2022-04-30 16:36:21</p>
-<p class='attribute'><strong>用例执行时间:</strong> 0:00:00秒</p>
-<p class='attribute'><strong>用例执行结果:</strong> none</p>
+<p class='attribute'><strong>报告生成日期:</strong> 2022-05-07 20:57:21</p>
+<p class='attribute'><strong>用例执行时间:</strong> 0:00:03.007514秒</p>
+<p class='attribute'><strong>用例执行结果:</strong> 报错 1</p>
 <p class='attribute'><strong>执行系统:</strong> win32</p>
 
 <br>
@@ -277,12 +277,53 @@ function showOutput(id, name) {
 
 </tr>
 
+<tr class='errorClass'>
+    <td>MyApp.run_case.Test: 测试类</td>
+    <td>1</td>
+    <td>0</td>
+    <td>0</td>
+    <td>1</td>
+    <td><button class="wqrf_button" style="background-color: #ffd1e7"  onclick="javascript:showClassDetail('c1',1)">详细</button></td>
+
+</tr>
+
+<tr id='ft1.1' class='none'>
+    <td class='errorCase'><div class='testcase'>test_001: 我是新步骤</div></td>
+    <td colspan='5' align='center'>
+
+    <!--css div popup start-->
+    <a class="popup_liznk" onfocus='this.blur();' href="javascript:showTestDetail('div_ft1.1')" >
+        <button class="wqrf_button" style="width: auto">错误详情</button></a>
+    <div id='div_ft1.1' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_ft1.1').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        
+ft1.1: Traceback (most recent call last):
+  File "D:\PycharmProjects\wqrftest\ApiTest\MyApp\run_case.py", line 309, in tool
+    Test.demo(self, step)
+  File "D:\PycharmProjects\wqrftest\ApiTest\MyApp\run_case.py", line 61, in demo
+    ts_project_headers = step.public_header.split(',')  # 获取公共请求头
+AttributeError: 'NoneType' object has no attribute 'split'
+
+
+         <div id="div100">
+        </div>
+        </pre>
+    </div> <br>
+    <!--css div popup end-->
+
+    </td>
+</tr>
+
 <tr id='total_row'>
     <td>总计</td>
+    <td>1</td>
     <td>0</td>
     <td>0</td>
-    <td>0</td>
-    <td>0</td>
+    <td>1</td>
     <td><button class="wqrf_button" style="background-color: #ffc2e6" onclick='javascript:location.reload()'>刷新</button></td>
 
 </tr>

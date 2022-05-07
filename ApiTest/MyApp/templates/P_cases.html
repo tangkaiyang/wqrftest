@@ -29,6 +29,7 @@
     <tr>
         <th style="width: 50px">id</th>
         <th style="width: -webkit-calc(100% - 410px)">用例名称</th>
+        <th style="width: 50px">并发</th>
         <th style="width: 450px">操作</th>
     </tr>
     </thead>
@@ -37,13 +38,12 @@
         <tr>
             <td>{{ i.id }}</td>
             <td>{{ i.name }}</td>
+            <td>{{ i.concurrent }}</td>
             <td>
                 <div class="btn-group" style="z-index: 0">
                     <button id="Run_btn_{{ i.id }}" class="btn btn-success" onclick="Run_Case('{{ i.id }}')">运行</button>
-                    <button
-                            class="btn btn-default"
-                            onclick="show_small('{{ i.id }}','{{ i.name }}')"
-                    >
+                    <button class="btn btn-default"
+                            onclick="show_small('{{ i.id }}','{{ i.name }}'), '{{ i.concurrent }}'">
                         设置
                     </button>
                     <a href="/look_report/{{ i.id }}/" target="_blank">
@@ -64,10 +64,19 @@
 </table>
 
 <a href="/add_case/{{ project.id }}/">
-    <button style="margin-left: 10px" class="btn btn-primary">
-        新增用例
+    <button style="margin-left: 10px" class="btn btn-primary">新增用例</button>
+</a>
+<a href="/concurrent_cases/{{ project.id }}/">
+    <button style="margin-left: 10px"
+            class="btn btn-primary">并发执行
     </button>
 </a>
+<a href="//">
+    <button style="margin-left: 10px"
+            class="btn btn-primary">查看并发报告
+    </button>
+</a>
+
 {#大用例函数#}
 <script>
     function Run_Case(Case_id) {
@@ -105,6 +114,9 @@
     <p style="position: absolute;bottom: 0;left: 5px">
         用例id: <span id="Case_id"></span>
         用例名称: <input type="text" id="Case_name" style="width: 50%" placeholder="可输入新名称" onblur="save_case_name()">
+        <br>
+        是否并发: <label><span>是 </span><input type="radio" value="True" name="concurrent_r"></label> &#12288;
+        <label><span>否 </span><input type="radio" value="False" name="concurrent_r"></label>
     </p>
 </div>
 <script>
@@ -162,7 +174,7 @@
         );
     }
 
-    function show_small(case_id, Case_name) {
+    function show_small(case_id, Case_name, case_concurrent) {
         if (document.getElementById("left_div").style.display == "none") {
             $("#left_div").css("display", "block");
             $("#left_div").animate({right: "65%"}, "fast");
@@ -175,6 +187,7 @@
 
         document.getElementById('Case_id').innerText = case_id;
         document.getElementById('Case_name').value = Case_name;
+        $(':radio[name="concurrent_r"][value="' + case_concurrent + '"]').attr("checked", "checked")
         refresh_left_div(case_id);
     }
 
@@ -190,6 +203,16 @@
         }, function (ret) {
         })
     }
+
+    // 并发选择出发时间
+    $("input[name='concurrent_r']").click(function () {
+        $.get('/save_case_concurrent/', {
+            'id': document.getElementById('Case_id').innerText,
+            'concurrent': $[':radio[name="concurrent_r"]:checked'].val(),
+        }, function (ret) {
+
+        })
+    })
 </script>
 <div
         id="right_div"

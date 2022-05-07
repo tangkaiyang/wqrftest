@@ -84,6 +84,9 @@ urlpatterns = [
     url(r'^encryption_save/$', encryption_save),  # 加密配置保存
     url(r'^cert_upload/(?P<pid>.*)/$', cert_upload),  # 上传证书
 
+    url(r'^save_case_concurrent/$', save_case_concurrent),  # 保存用例并发设置
+    url(r'^concurrent_cases/(?P<pid>.*)/$', concurrent_cases),  # 用例并发
+
     # ------------------小工具-----------------
     url(r'^tools_zhengjiao/$', zhengjiao),  # 进入小工具页面
     url(r'^zhengjiao_play/$', zhengjiao_play),  # 正交工具运行

@@ -82,6 +82,7 @@ class DB_apis_log(models.Model):
 class DB_cases(models.Model):
     project_id = models.CharField(max_length=10, null=True)  # 所属项目id
     name = models.CharField(max_length=50, null=True)  # 用例名字
+    concurrent = models.BooleanField(default=True)  # 是否并发
 
     def __str__(self):
         return str(self.name)
