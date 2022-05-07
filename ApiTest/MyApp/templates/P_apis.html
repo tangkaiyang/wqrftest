@@ -63,11 +63,11 @@
     </tbody>
 </table>
 
-<div style="text-align: center">
+<div style="text-align: center;">
     <div class="pagination">
     <span class="step-links">
         {% if apis.has_previous %}
-            <a href="?page={{ apis.previous_page_number }}" aria-labe="Previous">
+            <a href="?page={{ apis.previous_page_number }}" aria-label="Previous">
                 <span aria-hidden="true">&laquo;上一页</span>
             </a>&nbsp;&nbsp;
         {% endif %}
@@ -312,7 +312,7 @@ color: white;padding-left: 10px">
         <div class="tab-pane fade" id="Xml">
             <textarea name="" id="raw_Xml" style="color: black;width: 98%;height: 300px"></textarea>
         </div>
-        <div class="tap-pane fade" id="GraphQL">
+        <div class="tab-pane fade" id="GraphQL">
             <table style="width: 98%">
                 <thead>
                 <tr>
@@ -730,8 +730,13 @@ color: white;padding-left: 10px">
         }, function (ret) {
             // 点击response按钮
             $("li a[href='#response']")[0].click();
-            // 将返回的数据填充到response中
-            document.getElementById('ts_response_body').value = ret;
+            try {
+                ret = JSON.parse(ret);
+                document.getElementById('ts_response_body').value = JSON.stringify(ret,null,4);
+            } catch {
+                // 将返回的数据填充到response中
+                document.getElementById('ts_response_body').value = ret;
+            }
         })
     }
 </script>

@@ -266,7 +266,7 @@ def Api_save(request):
     if ts_body_method == '返回体':
         api = DB_apis.objects.filter(id=api_id)[0]
         ts_body_method = api.last_body_method
-        ts_api_body = api.last_body
+        ts_api_body = api.last_api_body
     else:
         ts_api_body = request.GET['ts_api_body']
     # 保存数据
@@ -595,7 +595,7 @@ def Api_send_home(request):
     ts_api_body = request.GET['ts_api_body']
     # 发送请求获取返回值
     if ts_header == "":
-        ts_header = {}
+        ts_header = "{}"
     try:
         header = json.loads(ts_header)  # 处理header
     except:

@@ -406,7 +406,7 @@ top: 80px;right: 15%;background-color: black;color: white;border-radius: 2px">cl
         <div class="tab-pane fade" id="Xml">
             <textarea name="" id="raw_Xml" style="color: black;width: 98%;height: 300px"></textarea>
         </div>
-        <div class="tap-pane fade" id="GraphQL">
+        <div class="tab-pane fade" id="GraphQL">
             <table style="width: 98%">
                 <thead>
                 <tr>
@@ -510,6 +510,7 @@ top: 80px;right: 15%;background-color: black;color: white;border-radius: 2px">cl
         function ts_send() {
             // 获取接口的所有数据
             var ts_method = document.getElementById('ts_method').value;
+            console.log(ts_method);
             var ts_url = document.getElementById('ts_url').value;
             var ts_host = document.getElementById('ts_host').value;
             var ts_header = document.getElementById('ts_header').value;
