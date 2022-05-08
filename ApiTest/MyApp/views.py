@@ -1325,8 +1325,8 @@ def concurrent_cases(request, pid):
     # 遍历所有并发用例,新建线程并执行
     def do_case(case_id):
         print('启动用例: ', case_id)
-        requests.get('http:///127.0.0.1:8000/Run_Case?Case_id=%s' % case_id)
-        print('执行完毕: ', case_id)
+        from wqrf_run_case import main_request
+        main_request(case_id)
 
     ts = []  # 空线程池
     for case_id in case_ids:

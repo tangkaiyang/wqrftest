@@ -28,7 +28,7 @@ class DB_project(models.Model):
     global_datas = models.CharField(max_length=100, null=True)  # 所生效的变量组的id列表
     encryption_insert = models.CharField(max_length=50, null=True)  # 加密算法插入位置
     encryption_input = models.CharField(max_length=500, null=True)  # 加密算法表达式
-    cert = models.CharField(max_length=200,null=True, default='') # 证书相关
+    cert = models.CharField(max_length=200, null=True, default='')  # 证书相关
 
     def __str__(self):
         return str(self.name)
@@ -106,9 +106,8 @@ class DB_step(models.Model):
     mock_res = models.CharField(max_length=1000, null=True)  # mock返回值
     public_header = models.CharField(max_length=1000, null=True)  # 全局变量-请求头
     api_login = models.CharField(max_length=10, null=True)  # 是否带登录态
-    cert = models.CharField(max_length=10, null=True) # 是否带证书
+    cert = models.CharField(max_length=10, null=True)  # 是否带证书
     sign = models.CharField(max_length=10, null=True, default='no')  # 是否验签
-
 
     def __str__(self):
         return str(self.name)
@@ -164,3 +163,13 @@ class DB_global_data(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+
+class DB_wqrf_step_report(models.Model):
+    step_id = models.CharField(max_length=10, default='')  # 步骤id
+    request_data = models.TextField(default='{}')  # 请求数据
+    response = models.TextField(default='')  # 返回结果
+    assert_result = models.CharField(max_length=500, default='{}')  # 断言结果
+
+    def __str__(self):
+        return self.step_id
