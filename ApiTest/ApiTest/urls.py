@@ -83,9 +83,11 @@ urlpatterns = [
     url(r'^global_data_change_check/$', global_data_change_check),  # 更改项目的生效变量组
     url(r'^encryption_save/$', encryption_save),  # 加密配置保存
     url(r'^cert_upload/(?P<pid>.*)/$', cert_upload),  # 上传证书
+    url(r'^look_concurrent_report/(?P<pid>.*)/$', look_concurrent_report),  # 查看并发用例报告
 
     url(r'^save_case_concurrent/$', save_case_concurrent),  # 保存用例并发设置
     url(r'^concurrent_cases/(?P<pid>.*)/$', concurrent_cases),  # 用例并发
+    url(r'^get_step_report/$', get_step_report),  # 获取具体step数据
 
     # ------------------小工具-----------------
     url(r'^tools_zhengjiao/$', zhengjiao),  # 进入小工具页面

@@ -1341,3 +1341,68 @@ def concurrent_cases(request, pid):
 
     # 返回
     return HttpResponse('')
+
+
+# 查看并发用例报告
+def look_concurrent_report(request, pid):
+    # 根据项目id,拿到所用并发的用例id
+    cases = DB_cases.objects.filter(project_id=pid, concurrent=True)
+    # 设计总res
+    res = {}
+    res["result"] = True
+    res["cases"] = []
+    res["cases_length"] = len(cases)
+    res["cases_wrong_length"] = 0
+    res["cases_right_length"] = len(cases)
+    for case in cases:
+        tmp = {}
+        tmp["case_id"] = case.id
+        tmp["case_name"] = case.name
+        tmp["result_case"] = True
+        tmp["steps"] = []
+        # 循环填充
+        steps = DB_step.objects.filter(Case_id=case.id)
+        for step in steps:
+            tmp_step = {}
+            tmp_step["step_id"] = step.id
+            tmp_step["step_name"] = step.name
+            tmp_step["result_step"] = ""
+            tmp_step["data"] = {}
+            s_report = DB_wqrf_step_report.objects.filter(step_id=step.id)[0]
+            tmp_step["data"]["assert_result"] = s_report.assert_result
+
+            if s_report.assert_result in [None, '', ' ']:
+                tmp_step["result_step"] = True
+            else:
+                for i in json.loads(s_report.assert_result).keys():
+                    if json.loads(s_report.assert_result)[i] == False:
+                        tmp_step["result_step"] = False
+                        break
+                else:
+                    tmp_step["result_step"] = True
+
+            tmp["steps"].append(tmp_step)
+            if tmp_step["result_step"] == False:
+                tmp["result_case"] = False
+        if tmp["result_case"] == False:
+            res["cases_wrong_length"] += 1
+            res["cases_right_length"] -= 1
+            res["result"] = False
+        res["cases"].append(tmp)
+    res["cases_wrong_scale"] = (res["cases_wrong_length"] / res["cases"]) * 100
+    res["cases_right_scale"] = 100 - res["cases_wrong_scale"]
+    # 返回给前端
+    return render(request, 'concurrent_report.html', res)
+
+
+# 获取具体step数据
+def get_step_report(request):
+    step_id = request.GET['step_id']
+    step = DB_wqrf_step_report.objects.filter(step_id=step_id)[0]
+    res = {}
+    res["assert_result"] = step.assert_result
+    res["response_data"] = step.response
+    res["request_data"] = step.request_data
+    step_name = DB_step.objects.filter(id=step_id)[0].name
+    res["step_span"] = "id: %s name: %s" % (step_id, step_name)
+    return HttpResponse(json.dumps(res), content_type='application/json')

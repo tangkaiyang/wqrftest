@@ -68,7 +68,7 @@ def do_step(step_id, tmp_datas):
     # url 处理
     rlist_url = re.findall(r"##(.*?)##", api_url)
     for i in rlist_url:
-        api_url = api_url.replace("##" + i + "##", str(eval(i)))
+        api_url = api_url.replace("##" + i + "##", tmp_datas[i])
 
     # header 处理
     rlist_header = re.findall(r"##(.*?)##", api_header)
@@ -85,7 +85,7 @@ def do_step(step_id, tmp_datas):
     elif api_body_method == 'Json':
         rlist_body = re.findall(r"##(.*?)##", api_body)
         for i in rlist_body:
-            api_body = api_body.replace("##" + i + "##", repr(eval(i)))
+            api_body = api_body.replace("##" + i + "##", tmp_datas[i])
 
     else:
         rlist_body = re.findall(r"##(.*?)##", api_body)
@@ -160,17 +160,16 @@ def do_step(step_id, tmp_datas):
     else:
         cert_name = ''
     ## 数据库写入请求数据
-    r_step = DB_wqrf_step_report.objects.get_or_create(id=step_id)
+    r_step = DB_wqrf_step_report.objects.get_or_create(id=step_id)[0]
     r_step.request_data = json.dumps({
         'url': url,
         "method": api_method,
         "api_body": api_body,
         "api_body_method": api_body_method
     })
-    r_step.save()
+    # r_step.save()
 
     '执行请求'
-
 
     ## none请求
     if api_body_method == 'none' or api_body_method == 'null':
@@ -257,6 +256,9 @@ def do_step(step_id, tmp_datas):
     response.encoding = "utf-8"
     res = response.text  # 最终结果文案
 
+    # 返回结果存入数据表
+    r_step.response = res
+
     '结果处理'
     # 新建临时变量列表
     tmp_d = {}
@@ -275,21 +277,51 @@ def do_step(step_id, tmp_datas):
             value = eval("%s%s" % (json.loads(res), py_path))
             tmp_d[key] = value
     ## 对返回res提取-正则法
-    if get_zz != '': # 说明有设置
+    if get_zz != '':  # 说明有设置
         for i in get_zz.split('\n'):
             key = i.split('=')[0].rstrip()
             zz = i.split('=')[1].lstrip()
             value = re.findall(zz, res)[0]
             tmp_d[key] = value
     ## 对返回值断言-路径法
+    tmp_assert_result = {}
+    if assert_path != '':
+        for i in assert_path.split('\n'):
+            path = i.split('=')[0].rstrip()
+            want = i.split('=')[1].lstrip()
+            py_path = ""
+            for j in path.split('/'):
+                if j != '':
+                    if j[0] != '[':
+                        py_path += '["%s"]' % j
+                    else:
+                        py_path += j
+            value = eval("%s%s" % (json.loads(res), py_path))
+            tmp_assert_result[i] = (want == value)
     ## 对返回值断言-正则
+    if assert_zz != "":
+        for i in assert_zz.split('\n'):
+            zz = i.split('=')[0].rstrip()
+            want = i.split('=')[1].lstrip()
+            value = re.findall(zz, res)[0]
+            tmp_assert_result[i] = (want==value)
     ## 对返回值断言-全值检测
+    if assert_qz != "":
+        for i in assert_qz.split('\n'):
+            if i not in res:
+                tmp_assert_result[i] = False
+            else:
+                tmp_assert_result[i] = True
+    r_step.assert_result = json.dumps(tmp_assert_result)
+    r_step.step_id = step_id
+    r_step.save()
+    return tmp_d
 
 
 def main_request(case_id):
     '入口主函数'
     tmp_datas = {}  # 临时变量列表
-    steps = DB_step.objects.filter(case_id=case_id)
+    steps = DB_step.objects.filter(Case_id=case_id)
     for i in steps:
         tmp_d = do_step(i.id, tmp_datas)  # tmp_d为单步骤临时变量, 列表
         tmp_datas.update(tmp_d)
